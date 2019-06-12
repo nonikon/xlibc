@@ -47,7 +47,7 @@ struct xarray_iter
 struct xarray_block
 {
     xarray_iter_t  parent;  /* parent block. */
-    unsigned short depth;   /* depth of current block. */
+    unsigned short shift;
     unsigned short used;    /* how many value current block had used. */
     void*          values[XARRAY_BLOCK_SIZE];
 };
@@ -73,7 +73,7 @@ void* xarray_set(xarray_t* array, unsigned int index, void* pvalue);
    return a pointer pointed to value, return 'NULL' if value is not set. */
 void* xarray_get(xarray_t* array, unsigned int index);
 /* remove value at 'index'. */
-void xarray_reset(xarray_t* array, unsigned int index);
+void xarray_unset(xarray_t* array, unsigned int index);
 /* clear all values. */
 void xarray_clear(xarray_t* array);
 

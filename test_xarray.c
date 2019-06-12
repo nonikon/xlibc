@@ -44,8 +44,8 @@ void test()
     traverse(array);
 
     printf("\n");
-    xarray_reset(array, 9999992);
-    xarray_reset(array, 9999995);
+    xarray_unset(array, 9999992);
+    xarray_unset(array, 9999995);
     traverse(array);
 
     printf("\narray[9999990] = %d\n", *(int*)xarray_get(array, 9999990));

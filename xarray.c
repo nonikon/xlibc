@@ -12,7 +12,7 @@ xarray_t* xarray_new(unsigned int val_size, xarray_destroy_cb cb)
 
         array->val_size    = val_size;
         array->destroy_cb  = cb;
-        array->root.depth  = 1;
+        array->root.shift  = XARRAY_BITS * (XARRAY_MAX_DEPTH - 1);
     }
 
     return array;
@@ -33,9 +33,9 @@ void* xarray_set(xarray_t* array, unsigned int index, void* pvalue)
     unsigned int i;
     void* p;
 
-    while (block->depth < XARRAY_MAX_DEPTH)
+    while (block->shift > 0)
     {
-        i = (index >> XARRAY_BITS * (XARRAY_MAX_DEPTH - block->depth)) & XARRAY_MASK;
+        i = (index >> block->shift) & XARRAY_MASK;
         p = block->values[i];
 
         if (!p)
@@ -49,7 +49,7 @@ void* xarray_set(xarray_t* array, unsigned int index, void* pvalue)
             ((xarray_block_t*)p)->parent.block = block;
             ((xarray_block_t*)p)->parent.index = (block->parent.index << XARRAY_BITS) | i;
             ((xarray_block_t*)p)->parent.pos   = i;
-            ((xarray_block_t*)p)->depth = block->depth + 1;
+            ((xarray_block_t*)p)->shift = block->shift - XARRAY_BITS;
 
             ++array->blocks;
             ++block->used;
@@ -79,14 +79,14 @@ void* xarray_set(xarray_t* array, unsigned int index, void* pvalue)
     return p;
 }
 
-void xarray_reset(xarray_t* array, unsigned int index)
+void xarray_unset(xarray_t* array, unsigned int index)
 {
     xarray_block_t* block = &array->root;
     unsigned int i;
 
-    while (block->depth < XARRAY_MAX_DEPTH)
+    while (block->shift > 0)
     {
-        i = (index >> XARRAY_BITS * (XARRAY_MAX_DEPTH - block->depth)) & XARRAY_MASK;
+        i = (index >> block->shift) & XARRAY_MASK;
 
         if (block->values[i])
             block = block->values[i];
@@ -108,12 +108,12 @@ void xarray_reset(xarray_t* array, unsigned int index)
         {
             i = block->parent.pos;
             block = block->parent.block;
-            
+
             --array->blocks;
             --block->used;
             free(block->values[i]);
         }
-        
+
         block->values[i] = NULL;
     }
 }
@@ -123,9 +123,9 @@ void* xarray_get(xarray_t* array, unsigned int index)
     xarray_block_t* block = &array->root;
     unsigned int i;
 
-    while (block->depth < XARRAY_MAX_DEPTH)
+    while (block->shift > 0)
     {
-        i = (index >> XARRAY_BITS * (XARRAY_MAX_DEPTH - block->depth)) & XARRAY_MASK;
+        i = (index >> block->shift) & XARRAY_MASK;
 
         if (block->values[i])
             block = block->values[i];
@@ -148,7 +148,7 @@ void xarray_clear(xarray_t* array)
         {
             if (block->values[i])
             {
-                if (block->depth == XARRAY_MAX_DEPTH)
+                if (block->shift == 0)
                 {
                     if (array->destroy_cb)
                         array->destroy_cb(block->values[i]);
@@ -176,9 +176,9 @@ void xarray_clear(xarray_t* array)
         }
     }
     // printf("after %d %d.\n", array->blocks, array->values);
-    
+
     memset(&array->root, 0, sizeof(xarray_block_t));
-    array->root.depth = 1;
+    array->root.shift = XARRAY_BITS * (XARRAY_MAX_DEPTH - 1);
 }
 
 void xarray_begin(xarray_t* array, xarray_iter_t* iter)
@@ -201,8 +201,13 @@ void xarray_iter_next(xarray_iter_t* iter)
         {
             if (block->values[i])
             {
-                if (block->depth == XARRAY_MAX_DEPTH)
-                    break;
+                if (block->shift == 0)
+                {
+                    iter->block = block;
+                    iter->index = (block->parent.index << XARRAY_BITS) | i;
+                    iter->pos   = i;
+                    return;
+                }
                 block = block->values[i];
                 i = 0;
             }
@@ -216,9 +221,7 @@ void xarray_iter_next(xarray_iter_t* iter)
         }
     }
 
-    iter->block = block;
-    iter->index = block ? (block->parent.index << XARRAY_BITS) | i : 0;
-    iter->pos   = i;
+    iter->block = NULL;
 }
 
 inline int xarray_iter_valid(xarray_iter_t* iter)

@@ -82,10 +82,10 @@ void xarray_begin(xarray_t* array, xarray_iter_t* iter);
 /* set 'iter' to the next iterator. */
 void xarray_iter_next(xarray_iter_t* iter);
 /* return if 'iter' is valid. */
-int xarray_iter_valid(xarray_iter_t* iter);
+#define xarray_iter_valid(iter) ((iter)->block != NULL)
 /* return the index of 'iter', 'iter' MUST be valid. */
-unsigned int xarray_iter_index(xarray_iter_t* iter);
+#define xarray_iter_index(iter) ((iter)->index)
 /* return a poiniter pointed to the value at 'iter', 'iter' MUST be valid. */
-void* xarray_iter_value(xarray_iter_t* iter);
+#define xarray_iter_value(iter) ((iter)->block->values[(iter)->pos])
 
 #endif // _XARRAY_H_

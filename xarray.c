@@ -223,18 +223,3 @@ void xarray_iter_next(xarray_iter_t* iter)
 
     iter->block = NULL;
 }
-
-inline int xarray_iter_valid(xarray_iter_t* iter)
-{
-    return iter->block != NULL;
-}
-
-inline unsigned int xarray_iter_index(xarray_iter_t* iter)
-{
-    return iter->index;
-}
-
-inline void* xarray_iter_value(xarray_iter_t* iter)
-{
-    return iter->block->values[iter->pos];
-}

@@ -66,6 +66,12 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter);
    if 'pvalue' is NULL, leave value uninitialized. then, set it by yourself.
    return an iterator pointing to the inserted element. */
 xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue);
+/* cut the element at 'iter', 'iter' MUST be valid.
+   return a pointer pointed to the element value.
+   'xlist_erase(xl, i)' is equal to 'xlist_cut_free(xl, xlist_cut(xl, i))'. */
+void* xlist_cut(xlist_t* xl, xlist_iter_t iter);
+/* destory an element which 'xlist_cut' returns ('xlist_destroy_cb' will be called). */
+void xlist_cut_free(xlist_t* xl, void* pvalue);
 /* clears the elements in a 'xlist_t'. */
 void xlist_clear(xlist_t* xl);
 
@@ -80,5 +86,9 @@ void xlist_clear(xlist_t* xl);
 #define xlist_pop_front(xl)             xlist_erase(xl, xlist_begin(xl))
 /* removes the last element. see 'xlist_erase'. */
 #define xlist_pop_back(xl)              xlist_erase(xl, xlist_rbegin(xl))
+/* cut the first element. see 'xlist_cut'. */
+#define xlist_cut_front(xl)             xlist_cut(xl, xlist_begin(xl))
+/* cut the last element. see 'xlist_cut'. */
+#define xlist_cut_back(xl)              xlist_cut(xl, xlist_rbegin(xl))
 
 #endif // _XLIST_H_

@@ -22,20 +22,28 @@ void test()
 {
     xlist_t* xl = xlist_new(sizeof(int), on_int_destroy);
     int v = 0;
+    int* pv;
 
     ++v; xlist_push_back(xl, &v);
     ++v; xlist_push_back(xl, &v);
     ++v; xlist_push_back(xl, &v);
     ++v; xlist_push_back(xl, &v);
     traverse(xl);
-
     xlist_clear(xl);
+
+    printf("\n");
     ++v; xlist_push_front(xl, &v);
     ++v; xlist_push_front(xl, &v);
     ++v; xlist_insert(xl, xlist_push_front(xl, &v), &v);
     ++v; xlist_push_front(xl, &v);
     traverse(xl);
 
+    pv = xlist_cut_front(xl);
+    traverse(xl);
+    printf("%d\n", *pv);
+    xlist_cut_free(xl, pv);
+
+    printf("\n");
     xlist_free(xl);
 }
 

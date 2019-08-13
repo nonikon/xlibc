@@ -86,3 +86,22 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
 
     return r;
 }
+
+void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
+{
+    --xl->size;
+    iter->prev->next = iter->next;
+    iter->next->prev = iter->prev;
+
+    return xlist_iter_value(iter);
+}
+
+void xlist_cut_free(xlist_t* xl, void* pvalue)
+{
+    if (xl->destroy_cb)
+    {
+        xl->destroy_cb(pvalue);
+    }
+
+    free(xlist_value_iter(pvalue));
+}

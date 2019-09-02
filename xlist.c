@@ -96,6 +96,19 @@ void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
     return xlist_iter_value(iter);
 }
 
+xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue)
+{
+    xlist_iter_t newi = xlist_value_iter(pvalue);
+
+    ++xl->size;
+    newi->next = iter;
+    newi->prev = iter->prev;
+    iter->prev->next = newi;
+    iter->prev = newi;
+
+    return newi;
+}
+
 void xlist_cut_free(xlist_t* xl, void* pvalue)
 {
     if (xl->destroy_cb)

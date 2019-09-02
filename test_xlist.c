@@ -41,7 +41,9 @@ void test()
     pv = xlist_cut_front(xl);
     traverse(xl);
     printf("%d\n", *pv);
-    xlist_cut_free(xl, pv);
+    // xlist_cut_free(xl, pv);
+    xlist_paste_back(xl, pv);
+    traverse(xl);
 
     printf("\n");
     xlist_free(xl);

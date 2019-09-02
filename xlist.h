@@ -68,10 +68,14 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter);
 xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue);
 /* cut the element at 'iter', 'iter' MUST be valid.
    return a pointer pointed to the element value.
-   'xlist_erase(xl, i)' is equal to 'xlist_cut_free(xl, xlist_cut(xl, i))'. */
+   'xlist_cut_free()' OR 'xlist_paste()' MUST be called for the return value. */
 void* xlist_cut(xlist_t* xl, xlist_iter_t iter);
 /* destory an element which 'xlist_cut' returns ('xlist_destroy_cb' will be called). */
 void xlist_cut_free(xlist_t* xl, void* pvalue);
+/* paste an element (which 'xlist_cut' returns) to 'xl' BEFORE 'iter'.
+   return a iterator pointed to the 'pvalue'.
+   'xl' element type MUST equal to the 'pvalue' type. */
+xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue);
 /* clears the elements in a 'xlist_t'. */
 void xlist_clear(xlist_t* xl);
 
@@ -90,5 +94,9 @@ void xlist_clear(xlist_t* xl);
 #define xlist_cut_front(xl)             xlist_cut(xl, xlist_begin(xl))
 /* cut the last element. see 'xlist_cut'. */
 #define xlist_cut_back(xl)              xlist_cut(xl, xlist_rbegin(xl))
+/* paste an element to the beginning. see 'xlist_paste'. */
+#define xlist_paste_front(xl, pvalue)   xlist_paste(xl, xlist_begin(xl), pvalue)
+/* paste an element to the end. see 'xlist_paste'. */
+#define xlist_paste_back(xl, pvalue)    xlist_paste(xl, xlist_end(xl), pvalue)
 
 #endif // _XLIST_H_

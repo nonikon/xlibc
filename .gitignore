@@ -2,3 +2,4 @@
 *.o
 test_xlist
 test_xarray
+test_xset

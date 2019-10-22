@@ -10,12 +10,17 @@ else
 CFLAGS += -O2
 endif
 
-all : test_xlist test_xarray
+TARGET = test_xlist test_xarray test_xset
+
+all : $(TARGET)
 
 test_xlist : xlist.o test_xlist.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 test_xarray : xarray.o test_xarray.o
+	@echo "\tLD $@"
+	@$(CC) -o $@ $^ $(LDFLAGS)
+test_xset : xset.o test_xset.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 
@@ -26,5 +31,5 @@ test_xarray : xarray.o test_xarray.o
 .PHONY : clean
 
 clean :
-	@echo "\tRM *.o test_xlist test_xarray"
-	@$(RM) *.o test_xlist test_xarray
+	@echo "\tRM *.o $(TARGET)"
+	@$(RM) *.o $(TARGET)

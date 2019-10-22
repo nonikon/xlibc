@@ -25,7 +25,7 @@ typedef struct xstr
 /* allocate memory for a string with initial capacity. */
 xstr_t* xstr_new(size_t capacity);
 /* allocate memory for a string and initialize with 'cstr'. 'size' can be <= 0. */
-xstr_t* xstr_new_with(const char* cstr, int size);
+xstr_t* xstr_new_with(const xchar* cstr, int size);
 /* release memory for a string. */
 void xstr_free(xstr_t* xs);
 

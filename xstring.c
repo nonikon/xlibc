@@ -5,7 +5,7 @@
 
 static void ensure_capacity(xstr_t* xs, size_t size)
 {
-    size_t new_cap = xs->capacity * 2;
+    size_t new_cap = xs->capacity << 1; /* xs->capacity * 2; */
     void* new_data;
 
     size += xs->size + 1;   /* leave 1 null-terminated */
@@ -39,7 +39,7 @@ xstr_t* xstr_new(size_t capacity)
     return r;
 }
 
-xstr_t* xstr_new_with(const char* cstr, int size)
+xstr_t* xstr_new_with(const xchar* cstr, int size)
 {
     xstr_t* r = malloc(sizeof(xstr_t));
 

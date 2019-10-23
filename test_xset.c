@@ -72,16 +72,26 @@ int on_cmp2(void* l, void* r)
 {
     return strcmp(l, r);
 }
+void traverse2(xset_node_t* node, int depth, int acc[])
+{
+    ++acc[depth];
+    if (node->rb_left)
+        traverse2(node->rb_left, depth + 1, acc);
+    if (node->rb_right)
+        traverse2(node->rb_right, depth + 1, acc);
+}
 void test_speed()
 {
     const char* char_table = "qwertyuiopasdfghjklzxcvbnm";
 #define STR_MAXLEN 16
     xset_t* xs = xset_new(STR_MAXLEN, on_cmp2, NULL);
     char str[STR_MAXLEN];
+    char str_to_find[100][STR_MAXLEN];
 
     srand(31430);
-    // generate 10000 random strings and insert into 'xs'
-    for (int i = 0; i < 10000; ++i)
+    // generate 100000 random strings and insert into 'xs'
+    // store 100 strings into 'str_to_find'
+    for (int i = 0; i < 100000; ++i)
     {
         for (int j = 0; j < STR_MAXLEN - 1; ++j)
         {
@@ -89,19 +99,29 @@ void test_speed()
         }
         str[STR_MAXLEN - 1] = '\0';
         xset_insert(xs, str);
+
+        if (i % 1000 == 0)
+            memcpy(str_to_find[i / 1000], str, 16);
     }
+    printf("size = %ld\n", xset_size(xs));
 #undef STR_MAXLEN
 
-    printf("xset size = %ld\n", xset_size(xs));
+    // printf the number of nodes in every depth of rbtree
+    int acc[36] = { 0 };
+    traverse2(xs->root, 0, acc);
+    printf("nodes[depth] = ");
+    for (int depth = 0; acc[depth] > 0; ++depth)
+        printf("%d ", acc[depth]);
+    printf("\n");
 
     // search time test
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
-    xset_iter_t iter = xset_find(xs, "aauqhprhnzrluwn");
-    if (xset_iter_valid(iter))
-        printf("found %s\n", (char*)xset_iter_key(iter));
+    for (int i = 0; i < 100; ++i)
+        if (!xset_find(xs, str)) printf("%s not found\n", str_to_find[i]);
     gettimeofday(&end, NULL);
-    printf("time %lds %ldus\n", end.tv_sec - begin.tv_sec, end.tv_usec - begin.tv_usec);
+    printf("search 100 strings done, time %lds %ldus\n",
+                end.tv_sec - begin.tv_sec, end.tv_usec - begin.tv_usec);
 
     xset_free(xs);
 }

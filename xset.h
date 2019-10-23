@@ -13,26 +13,26 @@ typedef void (*xset_destroy_cb)(void* pkey);
 typedef int (*xset_compare_cb)(void* l, void* r);
 
 typedef struct rb_node {
-	unsigned long   __rb_parent_color; // parent and color
+    unsigned long   __rb_parent_color; // parent and color
 
-	struct rb_node* rb_right;
-	struct rb_node* rb_left;
-	// char rb_key[0];
+    struct rb_node* rb_right;
+    struct rb_node* rb_left;
+    // char rb_key[0];
 } xset_node_t, *xset_iter_t;
 
 typedef struct xset {
-	xset_compare_cb compare_cb;
-	xset_destroy_cb destroy_cb;
-	size_t          key_size;
-	size_t          size;
-	xset_node_t*    root;
+    xset_compare_cb compare_cb;
+    xset_destroy_cb destroy_cb;
+    size_t          key_size;
+    size_t          size;
+    xset_node_t*    root;
 } xset_t;
 
 /* allocate memory and initialize a 'xset_t'.
  * 'compare_cb' is called when comparing two keys, can't be 'NULL'.
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
 xset_t* xset_new(size_t key_size, xset_compare_cb compare_cb,
-				xset_destroy_cb destroy_cb);
+                xset_destroy_cb destroy_cb);
 /* release memory for a 'xset_t'. */
 void xset_free(xset_t* xs);
 
@@ -53,9 +53,9 @@ xset_iter_t xset_riter_next(xset_iter_t iter);
 /* check whether an iterator is valid. */
 #define xset_iter_valid(iter)   ((iter) != NULL)
 /* return a pointer pointed to the key of 'iter', 'iter' MUST be valid. */
-#define xset_iter_key(iter)		((void*)((iter) + 1))
+#define xset_iter_key(iter)     ((void*)((iter) + 1))
 /* return an iterator of an element key. */
-#define xset_key_iter(pkey)		((xset_iter_t)(pkey) - 1)
+#define xset_key_iter(pkey)     ((xset_iter_t)(pkey) - 1)
 
 /* insert an element with specific key, return an iterator to
  * the inserted element, return 'NULL' when out of memory.

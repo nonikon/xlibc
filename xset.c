@@ -513,7 +513,7 @@ void xset_free(xset_t* xs)
     }
 }
 
-xset_iter_t xset_insert(xset_t* xs, const void* pvalue)
+xset_iter_t xset_insert(xset_t* xs, const void* pkey)
 {
     xset_iter_t* iter = &xs->root;
     xset_node_t* parent = NULL;
@@ -521,7 +521,7 @@ xset_iter_t xset_insert(xset_t* xs, const void* pvalue)
 
     while (*iter)
     {
-        result = xs->compare_cb((void*)pvalue, xset_iter_value(*iter));
+        result = xs->compare_cb((void*)pkey, xset_iter_key(*iter));
         parent = *iter;
 
         if (result > 0)
@@ -529,36 +529,31 @@ xset_iter_t xset_insert(xset_t* xs, const void* pvalue)
         else if (result < 0)
             iter = &(*iter)->rb_left;
         else
-        {
-            memcpy(xset_iter_value(*iter), pvalue, xs->key_size);
             return *iter;
-        }
     }
 
     xset_node_t* nwnd = malloc(sizeof(xset_node_t) + xs->key_size);
 
     if (nwnd)
     {
-        memcpy(xset_iter_value(nwnd), pvalue, xs->key_size);
+        memcpy(xset_iter_key(nwnd), pkey, xs->key_size);
 
         __rb_insert_node(nwnd, parent, iter);
         __rb_insert_color(nwnd, &xs->root);
         ++xs->size;
-
-        return nwnd;
     }
 
-    return NULL;
+    return nwnd;
 }
 
-xset_iter_t xset_find(xset_t* xs, const void* pvalue)
+xset_iter_t xset_find(xset_t* xs, const void* pkey)
 {
     xset_iter_t iter = xs->root;
     int result;
 
     while (iter)
     {
-        result = xs->compare_cb((void*)pvalue, xset_iter_value(iter));
+        result = xs->compare_cb((void*)pkey, xset_iter_key(iter));
 
         if (result > 0)
             iter = iter->rb_right;
@@ -581,7 +576,7 @@ void xset_erase(xset_t* xs, xset_iter_t iter)
         __rb_erase_color(rebalance, root);
 
     if (xs->destroy_cb)
-        xs->destroy_cb(xset_iter_value(iter));
+        xs->destroy_cb(xset_iter_key(iter));
     free(iter);
 
     --xs->size;
@@ -589,22 +584,31 @@ void xset_erase(xset_t* xs, xset_iter_t iter)
 
 void xset_clear(xset_t* xs)
 {
-    xset_iter_t iter = xset_begin(xs);
-    xset_iter_t next;
+    xset_iter_t iter = xs->root;
+    xset_iter_t parent;
 
-    // TODO...
-    if (xs->destroy_cb) while (iter)
+    while (iter)
     {
-        next = xset_iter_next(iter);
-        xs->destroy_cb(xset_iter_value(iter));
-        free(iter);
-        iter = next;
-    }
-    else while (iter)
-    {
-        next = xset_iter_next(iter);
-        free(iter);
-        iter = next;
+        if (iter->rb_left)
+        {
+            parent = iter;
+            iter = iter->rb_left;
+            parent->rb_left = NULL;
+        }
+        else if (iter->rb_right)
+        {
+            parent = iter;
+            iter = iter->rb_right;
+            parent->rb_right = NULL;
+        }
+        else
+        {
+            parent = rb_parent(iter);
+            if (xs->destroy_cb)
+                xs->destroy_cb(xset_iter_key(iter));
+            free(iter);
+            iter = parent;
+        }
     }
 
     xs->size = 0;

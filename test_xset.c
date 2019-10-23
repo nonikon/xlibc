@@ -1,70 +1,115 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "xset.h"
 
-typedef struct
+/* +++++++++++++++++++++test++++++++++++++++++++++  */
+int on_cmp(void* l, void* r)
 {
-    int key;
-    int value;
-} pair_t;
-
-int pair_cmp(void* l, void* r)
-{
-    return ((pair_t*)l)->key - ((pair_t*)r)->key;
+    return strcmp(*(char**)l, *(char**)r);
 }
-
-void pair_traverse(xset_t* xs)
+void on_destroy(void* pstr)
+{
+    printf("free [%s]\n", *(char**)pstr);
+    free(*(char**)pstr);
+}
+void traverse(xset_t* xs)
 {
     xset_iter_t iter = xset_begin(xs);
-    pair_t* pair;
+    char** pstr;
 
-    printf("->size=%d\n", xset_size(xs));
+    printf("traverse size=%ld\n", xset_size(xs));
     while (xset_iter_valid(iter))
     {
-        pair = xset_iter_value(iter);
-        printf(" [%d->%d]\n", pair->key, pair->value);
+        pstr = xset_iter_key(iter);
+        printf(" [%s], ", *pstr);
         iter = xset_iter_next(iter);
     }
+    printf("\n");
 }
-
 void test()
 {
-    xset_t* xs = xset_new(sizeof(pair_t), pair_cmp, NULL);
-    pair_t pair;
+    xset_t* xs = xset_new(sizeof(char*), on_cmp, on_destroy);
+    char* str;
 
-    pair.key = 5467; pair.value = 2563467; xset_insert(xs, &pair);
-    pair.key = 74545; pair.value = 2554; xset_insert(xs, &pair);
-    pair.key = 1999; pair.value = 43; xset_insert(xs, &pair);
-    pair.key = 1991; pair.value = 23; xset_insert(xs, &pair);
-    pair.key = 1994; pair.value = 73; xset_insert(xs, &pair);
-    pair.key = 19634699; pair.value = 11; xset_insert(xs, &pair);
-    pair.key = 1993; pair.value = 22; xset_insert(xs, &pair);
-    pair.key = 1699; pair.value = 72; xset_insert(xs, &pair);
-    pair.key = 1992; pair.value = 81; xset_insert(xs, &pair);
-    pair.key = 234; pair.value = 12; xset_insert(xs, &pair);
-    pair.key = 74545; pair.value = 1111; xset_insert(xs, &pair);
-    pair.key = 74545; pair.value = 2222; xset_insert(xs, &pair);
-    pair.key = 332; pair.value = 11; xset_insert(xs, &pair);
-    pair.key = 5525; pair.value = 11; xset_insert(xs, &pair);
-    pair.key = 2342; pair.value = 11; xset_insert(xs, &pair);
+    str = strdup("fweogew");
+    xset_insert(xs, &str);
+    str = strdup("he543yh");
+    xset_insert(xs, &str);
+    str = strdup("hb353uyh4j");
+    xset_insert(xs, &str);
+    str = strdup("hb23gr26ty54u");
+    xset_insert(xs, &str);
+    str = strdup("234235fsd");
+    xset_insert(xs, &str);
+    str = strdup("u656i5kk");
+    xset_insert(xs, &str);
+    str = strdup("yh35");
+    xset_insert(xs, &str);
+    str = strdup("2");
+    xset_insert(xs, &str);
 
-    pair_traverse(xs);
+    traverse(xs);
 
-    pair.key = 1999;
-    xset_iter_t iter = xset_find(xs, &pair);
+    str = "u656i5kk";
+    xset_iter_t iter = xset_find(xs, &str);
     if (xset_iter_valid(iter))
     {
-        pair_t* ppair = xset_iter_value(iter);
-        printf("%d->%d\n", pair.key, ppair->value);
-
+        char** pstr = xset_iter_key(iter);
+        printf("erase [%s]\n", *pstr);
         xset_erase(xs, iter);
-        pair_traverse(xs);
+        traverse(xs);
     }
 
     xset_free(xs);
 }
+/*----------------------test----------------------*/
+
+/* +++++++++++++++++++++testspeed++++++++++++++++++++++  */
+#include <sys/time.h>
+
+int on_cmp2(void* l, void* r)
+{
+    return strcmp(l, r);
+}
+void test_speed()
+{
+    const char* char_table = "qwertyuiopasdfghjklzxcvbnm";
+#define STR_MAXLEN 16
+    xset_t* xs = xset_new(STR_MAXLEN, on_cmp2, NULL);
+    char str[STR_MAXLEN];
+
+    srand(31430);
+    // generate 10000 random strings and insert into 'xs'
+    for (int i = 0; i < 10000; ++i)
+    {
+        for (int j = 0; j < STR_MAXLEN - 1; ++j)
+        {
+            str[j] = char_table[rand() % 26];
+        }
+        str[STR_MAXLEN - 1] = '\0';
+        xset_insert(xs, str);
+    }
+#undef STR_MAXLEN
+
+    printf("xset size = %ld\n", xset_size(xs));
+
+    // search time test
+    struct timeval begin, end;
+    gettimeofday(&begin, NULL);
+    xset_iter_t iter = xset_find(xs, "aauqhprhnzrluwn");
+    if (xset_iter_valid(iter))
+        printf("found %s\n", (char*)xset_iter_key(iter));
+    gettimeofday(&end, NULL);
+    printf("time %lds %ldus\n", end.tv_sec - begin.tv_sec, end.tv_usec - begin.tv_usec);
+
+    xset_free(xs);
+}
+/*----------------------testspeed----------------------*/
 
 int main(int argc, char** argv)
 {
-    test();
+    // test();
+    test_speed();
     return 0;
 }

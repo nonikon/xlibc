@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "xset.h"
+
+#include "xrb_tree.h"
 
 /* +++++++++++++++++++++test++++++++++++++++++++++  */
 int on_cmp(void* l, void* r)
@@ -13,55 +14,55 @@ void on_destroy(void* pstr)
     printf("free [%s]\n", *(char**)pstr);
     free(*(char**)pstr);
 }
-void traverse(xset_t* xs)
+void traverse(xrb_tree_t* xs)
 {
-    xset_iter_t iter = xset_begin(xs);
+    xrb_iter_t iter = xrb_tree_begin(xs);
     char** pstr;
 
-    printf("traverse size=%ld\n", xset_size(xs));
-    while (xset_iter_valid(iter))
+    printf("traverse size=%ld\n", xrb_tree_size(xs));
+    while (xrb_iter_valid(iter))
     {
-        pstr = xset_iter_key(iter);
+        pstr = xrb_iter_data(iter);
         printf(" [%s], ", *pstr);
-        iter = xset_iter_next(iter);
+        iter = xrb_iter_next(iter);
     }
     printf("\n");
 }
 void test()
 {
-    xset_t* xs = xset_new(sizeof(char*), on_cmp, on_destroy);
+    xrb_tree_t* xs = xrb_tree_new(sizeof(char*), on_cmp, on_destroy);
     char* str;
 
     str = strdup("fweogew");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
     str = strdup("he543yh");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
     str = strdup("hb353uyh4j");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
     str = strdup("hb23gr26ty54u");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
     str = strdup("234235fsd");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
     str = strdup("u656i5kk");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
     str = strdup("yh35");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
     str = strdup("2");
-    xset_insert(xs, &str);
+    xrb_tree_insert(xs, &str);
 
     traverse(xs);
 
     str = "u656i5kk";
-    xset_iter_t iter = xset_find(xs, &str);
-    if (xset_iter_valid(iter))
+    xrb_iter_t iter = xrb_tree_find(xs, &str);
+    if (xrb_iter_valid(iter))
     {
-        char** pstr = xset_iter_key(iter);
+        char** pstr = xrb_iter_data(iter);
         printf("erase [%s]\n", *pstr);
-        xset_erase(xs, iter);
+        xrb_tree_erase(xs, iter);
         traverse(xs);
     }
 
-    xset_free(xs);
+    xrb_tree_free(xs);
 }
 /*----------------------test----------------------*/
 
@@ -72,7 +73,7 @@ int on_cmp2(void* l, void* r)
 {
     return strcmp(l, r);
 }
-void traverse2(xset_node_t* node, int depth, int acc[])
+void traverse2(xrb_node_t* node, int depth, int acc[])
 {
     ++acc[depth];
     if (node->rb_left)
@@ -80,11 +81,24 @@ void traverse2(xset_node_t* node, int depth, int acc[])
     if (node->rb_right)
         traverse2(node->rb_right, depth + 1, acc);
 }
+void tree_overview(xrb_tree_t* xs)
+{
+    // printf the number of nodes in every depth of rbtree
+    int acc[36] = { 0 };
+
+    printf("size = %ld\n", xrb_tree_size(xs));
+    traverse2(xs->root, 0, acc);
+    printf("nodes[depth] = ");
+    for (int depth = 0; acc[depth] > 0; ++depth)
+        printf("%d ", acc[depth]);
+    printf("\n");
+
+}
 void test_speed()
 {
     const char* char_table = "qwertyuiopasdfghjklzxcvbnm";
 #define STR_MAXLEN 16
-    xset_t* xs = xset_new(STR_MAXLEN, on_cmp2, NULL);
+    xrb_tree_t* xs = xrb_tree_new(STR_MAXLEN, on_cmp2, NULL);
     char str[STR_MAXLEN];
     char str_to_find[100][STR_MAXLEN];
 
@@ -98,32 +112,39 @@ void test_speed()
             str[j] = char_table[rand() % 26];
         }
         str[STR_MAXLEN - 1] = '\0';
-        xset_insert(xs, str);
+        xrb_tree_insert(xs, str);
 
         if (i % 1000 == 0)
             memcpy(str_to_find[i / 1000], str, 16);
     }
-    printf("size = %ld\n", xset_size(xs));
 #undef STR_MAXLEN
+    tree_overview(xs);
 
-    // printf the number of nodes in every depth of rbtree
-    int acc[36] = { 0 };
-    traverse2(xs->root, 0, acc);
-    printf("nodes[depth] = ");
-    for (int depth = 0; acc[depth] > 0; ++depth)
-        printf("%d ", acc[depth]);
-    printf("\n");
+    struct timeval begin, end;
+    xrb_iter_t iter_to_erase[100];
 
     // search time test
-    struct timeval begin, end;
     gettimeofday(&begin, NULL);
     for (int i = 0; i < 100; ++i)
-        if (!xset_find(xs, str)) printf("%s not found\n", str_to_find[i]);
+    {
+        iter_to_erase[i] = xrb_tree_find(xs, str_to_find[i]);
+        if (!iter_to_erase[i])
+            printf("%s not found\n", str_to_find[i]);
+    }
     gettimeofday(&end, NULL);
     printf("search 100 strings done, time %lds %ldus\n",
                 end.tv_sec - begin.tv_sec, end.tv_usec - begin.tv_usec);
 
-    xset_free(xs);
+    // remove time test
+    gettimeofday(&begin, NULL);
+    for (int i = 0; i < 100; ++i)
+        xrb_tree_erase(xs, iter_to_erase[i]);
+    gettimeofday(&end, NULL);
+    printf("erase 100 strings done, time %lds %ldus\n",
+                end.tv_sec - begin.tv_sec, end.tv_usec - begin.tv_usec);
+    tree_overview(xs);
+
+    xrb_tree_free(xs);
 }
 /*----------------------testspeed----------------------*/
 

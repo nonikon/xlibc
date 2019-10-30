@@ -48,7 +48,7 @@ struct xarray_block
 {
     xarray_iter_t  parent;  /* parent block. */
     unsigned short shift;
-    unsigned short used;    /* how many value current block had used. */
+    unsigned short used;    /* how many values current block had used. */
     void*          values[XARRAY_BLOCK_SIZE];
 };
 
@@ -58,19 +58,19 @@ struct xarray
                                     /* current just for DEBUG. */
     unsigned int      values;       /* how many value had allocated in xarray. */
                                     /* current just for DEBUG. */
-    unsigned int      val_size;     /* size of value. */
-    xarray_destroy_cb destroy_cb;   /* called when value is freed. */
+    xarray_destroy_cb destroy_cb;   /* called when value is removed. */
     xarray_block_t    root;         /* root block. */
 };
 
-xarray_t* xarray_new(unsigned int val_size, xarray_destroy_cb cb);
+xarray_t* xarray_new(xarray_destroy_cb cb);
 void xarray_free(xarray_t* array);
 
-/* set value at 'index', 'pvalue' can be 'NULL' (leave value uninitialized. set it by yourself).
-   reuturn a pointer pointed to the new allocated value, return 'NULL' if out of memory. */
+/* set value at 'index', 'pvalue' can't be 'NULL'.
+ * if 'index' has already been set, unset (call 'destroy_cb') it first.
+ * reuturn 'pvalue' if success, return 'NULL' if out of memory. */
 void* xarray_set(xarray_t* array, unsigned int index, void* pvalue);
 /* get value at 'index'.
-   return a pointer pointed to value, return 'NULL' if value is not set. */
+ * return a pointer pointed to value, return 'NULL' if value is not been set. */
 void* xarray_get(xarray_t* array, unsigned int index);
 /* remove value at 'index'. */
 void xarray_unset(xarray_t* array, unsigned int index);

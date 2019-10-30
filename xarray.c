@@ -2,7 +2,7 @@
 #include <string.h>
 #include "xarray.h"
 
-xarray_t* xarray_new(unsigned int val_size, xarray_destroy_cb cb)
+xarray_t* xarray_new(xarray_destroy_cb cb)
 {
     xarray_t* array = malloc(sizeof(xarray_t));
 
@@ -10,7 +10,6 @@ xarray_t* xarray_new(unsigned int val_size, xarray_destroy_cb cb)
     {
         memset(array, 0, sizeof(xarray_t));
 
-        array->val_size    = val_size;
         array->destroy_cb  = cb;
         array->root.shift  = XARRAY_BITS * (XARRAY_MAX_DEPTH - 1);
     }
@@ -29,54 +28,49 @@ void xarray_free(xarray_t* array)
 
 void* xarray_set(xarray_t* array, unsigned int index, void* pvalue)
 {
-    xarray_block_t* block = &array->root;
+    xarray_block_t* parent = &array->root;
+    xarray_block_t* child;
     unsigned int i;
-    void* p;
 
-    while (block->shift > 0)
+    if (!pvalue) return NULL;
+
+    while (parent->shift > 0)
     {
-        i = (index >> block->shift) & XARRAY_MASK;
-        p = block->values[i];
+        i = (index >> parent->shift) & XARRAY_MASK;
+        child = parent->values[i];
 
-        if (!p)
+        if (!child)
         {
-            p = malloc(sizeof(xarray_block_t));
-            if (!p)
+            child = malloc(sizeof(xarray_block_t));
+            if (!child)
                 return NULL;
 
-            memset(p, 0, sizeof(xarray_block_t));
+            memset(child, 0, sizeof(xarray_block_t));
 
-            ((xarray_block_t*)p)->parent.block = block;
-            ((xarray_block_t*)p)->parent.index = (block->parent.index << XARRAY_BITS) | i;
-            ((xarray_block_t*)p)->parent.pos   = i;
-            ((xarray_block_t*)p)->shift = block->shift - XARRAY_BITS;
+            child->parent.block = parent;
+            child->parent.index = (parent->parent.index << XARRAY_BITS) | i;
+            child->parent.pos   = i;
+            child->shift = parent->shift - XARRAY_BITS;
 
             ++array->blocks;
-            ++block->used;
-            block->values[i] = p;
+            ++parent->used;
+
+            parent->values[i] = child;
         }
 
-        block = p;
+        parent = child;
     }
 
     i = index & XARRAY_MASK;
-    p = block->values[i];
 
-    if (!p)
-    {
-        p = malloc(array->val_size);
-        if (!p)
-            return NULL;
+    if (!parent->values[i])
+        ++array->values, ++parent->used;
+    else if (array->destroy_cb) // index has already been set, destroy it
+        array->destroy_cb(parent->values[i]);
 
-        ++array->values;
-        ++block->used;
-        block->values[i] = p;
-    }
+    parent->values[i] = pvalue;
 
-    if (pvalue)
-        memcpy(p, pvalue, array->val_size);
-
-    return p;
+    return pvalue;
 }
 
 void xarray_unset(xarray_t* array, unsigned int index)
@@ -95,11 +89,11 @@ void xarray_unset(xarray_t* array, unsigned int index)
     }
 
     i = index & XARRAY_MASK;
+
     if (block->values[i])
     {
         if (array->destroy_cb)
             array->destroy_cb(block->values[i]);
-        free(block->values[i]);
 
         --array->values;
         --block->used;
@@ -152,7 +146,7 @@ void xarray_clear(xarray_t* array)
                 {
                     if (array->destroy_cb)
                         array->destroy_cb(block->values[i]);
-                    free(block->values[i++]);
+                    ++i;
                     --array->values;
                 }
                 else

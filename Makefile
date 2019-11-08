@@ -20,10 +20,10 @@ test_xlist : xlist.o test_xlist.o
 test_xarray : xarray.o test_xarray.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
-test_xrb_tree : xrb_tree.o test_xrb_tree.o
+test_xrb_tree : xrbtree.o test_xrb_tree.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
-test_xrb_map : xrb_tree.o test_xrb_map.o
+test_xrb_map : xrbtree.o test_xrb_map.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 

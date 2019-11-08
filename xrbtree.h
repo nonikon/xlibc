@@ -1,5 +1,5 @@
-#ifndef _XRB_TREE_H_
-#define _XRB_TREE_H_
+#ifndef _XRBTREE_H_
+#define _XRBTREE_H_
 
 #include <stddef.h>
 
@@ -67,4 +67,4 @@ void xrb_tree_erase(xrb_tree_t* tr, xrb_iter_t iter);
 /* remove all elements in 'tr'. */
 void xrb_tree_clear(xrb_tree_t* tr);
 
-#endif // _XRB_TREE_H_
+#endif // _XRBTREE_H_

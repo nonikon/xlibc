@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "xrb_tree.h"
+#include "xrbtree.h"
 
 /* +++++++++++++++++++++test++++++++++++++++++++++  */
 int on_cmp(void* l, void* r)

@@ -22,30 +22,30 @@ void mystruct_destroy(void* v)
 {
     free(((mystruct_t*)v)->name);
 }
-void insert_mystruct(xrb_tree_t* rb, char* name, int age, char tag[16])
+void insert_mystruct(xrbtree_t* rb, char* name, int age, char tag[16])
 {
     mystruct_t myst;
-    size_t sz = xrb_tree_size(rb);
+    size_t sz = xrbtree_size(rb);
     
     myst.name = strdup(name);
     myst.age = age;
     strcpy(myst.tag, tag);
 
-    xrb_iter_t iter = xrb_tree_insert(rb, &myst);
-    if (sz == xrb_tree_size(rb))
+    xrbtree_iter_t iter = xrbtree_insert(rb, &myst);
+    if (sz == xrbtree_size(rb))
     {
         // when 'name' has already inserted, cover it.
-        memcpy(xrb_iter_data(iter), &myst, sizeof(myst));
+        memcpy(xrbtree_iter_data(iter), &myst, sizeof(myst));
     }
 }
-void find_mystruct(xrb_tree_t* rb, char* name)
+void find_mystruct(xrbtree_t* rb, char* name)
 {
     mystruct_t myst = { name };
-    xrb_iter_t iter = xrb_tree_find(rb, &myst);
+    xrbtree_iter_t iter = xrbtree_find(rb, &myst);
 
-    if (xrb_iter_valid(iter))
+    if (xrbtree_iter_valid(iter))
     {
-        mystruct_t* p = xrb_iter_data(iter);
+        mystruct_t* p = xrbtree_iter_data(iter);
         printf("found [%s]: age=%d, tag=%s\n", p->name, p->age, p->tag);
     }
     else
@@ -56,7 +56,7 @@ void find_mystruct(xrb_tree_t* rb, char* name)
 
 int main(int argc, char** argv)
 {
-    xrb_tree_t* rb = xrb_tree_new(sizeof(mystruct_t),
+    xrbtree_t* rb = xrbtree_new(sizeof(mystruct_t),
                         mystruct_key_cmp, mystruct_destroy);
 
     insert_mystruct(rb, "abcd", 10, "abcd_tag");
@@ -74,6 +74,6 @@ int main(int argc, char** argv)
     find_mystruct(rb, "gweggwrhnerhwrh");
     find_mystruct(rb, "fweg");
 
-    xrb_tree_free(rb);
+    xrbtree_free(rb);
     return 0;
 }

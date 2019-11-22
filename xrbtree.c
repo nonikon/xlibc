@@ -10,8 +10,8 @@
 #define	RB_RED              0
 #define	RB_BLACK	        1
 
-#define __rb_parent(pc)     ((struct rb_node *)(pc & ~3))
-#define rb_parent(rb)       ((struct rb_node *)((rb)->rb_parent_color & ~3))
+#define __rb_parent(pc)     ((xrbtree_node_t *)(pc & ~3))
+#define rb_parent(rb)       ((xrbtree_node_t *)((rb)->rb_parent_color & ~3))
 
 #define __rb_color(pc)      ((pc) & 1)
 #define __rb_is_black(pc)   __rb_color(pc)
@@ -20,29 +20,29 @@
 #define rb_is_red(rb)       __rb_is_red((rb)->rb_parent_color)
 #define rb_is_black(rb)     __rb_is_black((rb)->rb_parent_color)
 
-static inline void rb_set_parent(struct rb_node *rb, struct rb_node *p)
+static inline void rb_set_parent(xrbtree_node_t *rb, xrbtree_node_t *p)
 {
     rb->rb_parent_color = rb_color(rb) | (unsigned long)p;
 }
 
-static inline void rb_set_parent_color(struct rb_node *rb,
-                        struct rb_node *p, int color)
+static inline void rb_set_parent_color(xrbtree_node_t *rb,
+                        xrbtree_node_t *p, int color)
 {
     rb->rb_parent_color = (unsigned long)p | color;
 }
 
-static inline void rb_set_black(struct rb_node *rb)
+static inline void rb_set_black(xrbtree_node_t *rb)
 {
     rb->rb_parent_color |= RB_BLACK;
 }
 
-static inline struct rb_node *rb_red_parent(struct rb_node *red)
+static inline xrbtree_node_t *rb_red_parent(xrbtree_node_t *red)
 {
-    return (struct rb_node *)red->rb_parent_color;
+    return (xrbtree_node_t *)red->rb_parent_color;
 }
 
-static inline void __rb_change_child(struct rb_node *old, struct rb_node *new,
-            struct rb_node *parent, struct rb_node **root)
+static inline void __rb_change_child(xrbtree_node_t *old, xrbtree_node_t *new,
+            xrbtree_node_t *parent, xrbtree_node_t **root)
 {
     if (parent) {
         if (parent->rb_left == old)
@@ -59,10 +59,10 @@ static inline void __rb_change_child(struct rb_node *old, struct rb_node *new,
  * - old's parent and color get assigned to new
  * - old gets assigned new as a parent and 'color' as a color.
  */
-static inline void __rb_rotate_set_parents(struct rb_node *old, struct rb_node *new,
-            struct rb_node **root, int color)
+static inline void __rb_rotate_set_parents(xrbtree_node_t *old, xrbtree_node_t *new,
+            xrbtree_node_t **root, int color)
 {
-    struct rb_node *parent = rb_parent(old);
+    xrbtree_node_t *parent = rb_parent(old);
     new->rb_parent_color = old->rb_parent_color;
     rb_set_parent_color(old, new, color);
     __rb_change_child(old, new, parent, root);
@@ -71,8 +71,8 @@ static inline void __rb_rotate_set_parents(struct rb_node *old, struct rb_node *
 /*
  * Insert 'node' into 'rb_link', below 'parent'
  */
-static inline void __rb_insert_node(struct rb_node *node, struct rb_node *parent,
-                struct rb_node **rb_link)
+static inline void __rb_insert_node(xrbtree_node_t *node, xrbtree_node_t *parent,
+                xrbtree_node_t **rb_link)
 {
     node->rb_parent_color = (unsigned long)parent;
     node->rb_left = node->rb_right = NULL;
@@ -80,9 +80,9 @@ static inline void __rb_insert_node(struct rb_node *node, struct rb_node *parent
     *rb_link = node;
 }
 
-static inline void __rb_insert_color(struct rb_node *node, struct rb_node **root)
+static inline void __rb_insert_color(xrbtree_node_t *node, xrbtree_node_t **root)
 {
-    struct rb_node *parent = rb_red_parent(node), *gparent, *tmp;
+    xrbtree_node_t *parent = rb_red_parent(node), *gparent, *tmp;
 
     while (1) {
         /*
@@ -212,11 +212,11 @@ static inline void __rb_insert_color(struct rb_node *node, struct rb_node **root
     }
 }
 
-static inline struct rb_node *__rb_erase_node(struct rb_node *node, struct rb_node **root)
+static inline xrbtree_node_t *__rb_erase_node(xrbtree_node_t *node, xrbtree_node_t **root)
 {
-    struct rb_node *child = node->rb_right;
-    struct rb_node *tmp = node->rb_left;
-    struct rb_node *parent, *rebalance;
+    xrbtree_node_t *child = node->rb_right;
+    xrbtree_node_t *tmp = node->rb_left;
+    xrbtree_node_t *parent, *rebalance;
     unsigned long pc;
 
     if (!tmp) {
@@ -244,7 +244,7 @@ static inline struct rb_node *__rb_erase_node(struct rb_node *node, struct rb_no
         rebalance = NULL;
         tmp = parent;
     } else {
-        struct rb_node *successor = child, *child2;
+        xrbtree_node_t *successor = child, *child2;
 
         tmp = child->rb_left;
         if (!tmp) {
@@ -308,9 +308,9 @@ static inline struct rb_node *__rb_erase_node(struct rb_node *node, struct rb_no
     return rebalance;
 }
 
-static inline void __rb_erase_color(struct rb_node *parent, struct rb_node **root)
+static inline void __rb_erase_color(xrbtree_node_t *parent, xrbtree_node_t **root)
 {
-    struct rb_node *node = NULL, *sibling, *tmp1, *tmp2;
+    xrbtree_node_t *node = NULL, *sibling, *tmp1, *tmp2;
 
     while (1) {
         /*
@@ -487,10 +487,10 @@ static inline void __rb_erase_color(struct rb_node *parent, struct rb_node **roo
  * +++++ linux kernel rbtree interface - end +++++
  */
 
-xrb_tree_t* xrb_tree_new(size_t data_size,
-            xrb_compare_cb compare_cb, xrb_destroy_cb destroy_cb)
+xrbtree_t* xrbtree_new(size_t data_size, xrbtree_compare_cb compare_cb,
+                xrbtree_destroy_cb destroy_cb)
 {
-    xrb_tree_t* tr = malloc(sizeof(xrb_tree_t));
+    xrbtree_t* tr = malloc(sizeof(xrbtree_t));
 
     if (tr)
     {
@@ -504,24 +504,24 @@ xrb_tree_t* xrb_tree_new(size_t data_size,
     return tr;
 }
 
-void xrb_tree_free(xrb_tree_t* tr)
+void xrbtree_free(xrbtree_t* tr)
 {
     if (tr)
     {
-        xrb_tree_clear(tr);
+        xrbtree_clear(tr);
         free(tr);
     }
 }
 
-xrb_iter_t xrb_tree_insert(xrb_tree_t* tr, const void* pdata)
+xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata)
 {
-    xrb_iter_t* iter = &tr->root;
-    xrb_node_t* parent = NULL;
+    xrbtree_iter_t* iter = &tr->root;
+    xrbtree_node_t* parent = NULL;
     int result;
 
     while (*iter)
     {
-        result = tr->compare_cb((void*)pdata, xrb_iter_data(*iter));
+        result = tr->compare_cb((void*)pdata, xrbtree_iter_data(*iter));
         parent = *iter;
 
         if (result > 0)
@@ -532,11 +532,11 @@ xrb_iter_t xrb_tree_insert(xrb_tree_t* tr, const void* pdata)
             return *iter;
     }
 
-    xrb_node_t* nwnd = malloc(sizeof(xrb_node_t) + tr->data_size);
+    xrbtree_node_t* nwnd = malloc(sizeof(xrbtree_node_t) + tr->data_size);
 
     if (nwnd)
     {
-        memcpy(xrb_iter_data(nwnd), pdata, tr->data_size);
+        memcpy(xrbtree_iter_data(nwnd), pdata, tr->data_size);
 
         __rb_insert_node(nwnd, parent, iter);
         __rb_insert_color(nwnd, &tr->root);
@@ -546,14 +546,14 @@ xrb_iter_t xrb_tree_insert(xrb_tree_t* tr, const void* pdata)
     return nwnd;
 }
 
-xrb_iter_t xrb_tree_find(xrb_tree_t* tr, const void* pdata)
+xrbtree_iter_t xrbtree_find(xrbtree_t* tr, const void* pdata)
 {
-    xrb_iter_t iter = tr->root;
+    xrbtree_iter_t iter = tr->root;
     int result;
 
     while (iter)
     {
-        result = tr->compare_cb((void*)pdata, xrb_iter_data(iter));
+        result = tr->compare_cb((void*)pdata, xrbtree_iter_data(iter));
 
         if (result > 0)
             iter = iter->rb_right;
@@ -566,26 +566,26 @@ xrb_iter_t xrb_tree_find(xrb_tree_t* tr, const void* pdata)
     return NULL;
 }
 
-void xrb_tree_erase(xrb_tree_t* tr, xrb_iter_t iter)
+void xrbtree_erase(xrbtree_t* tr, xrbtree_iter_t iter)
 {
-    xrb_iter_t* root = &tr->root;
-    xrb_node_t* rebalance;
+    xrbtree_iter_t* root = &tr->root;
+    xrbtree_node_t* rebalance;
 
     rebalance = __rb_erase_node(iter, root);
     if (rebalance)
         __rb_erase_color(rebalance, root);
 
     if (tr->destroy_cb)
-        tr->destroy_cb(xrb_iter_data(iter));
+        tr->destroy_cb(xrbtree_iter_data(iter));
     free(iter);
 
     --tr->size;
 }
 
-void xrb_tree_clear(xrb_tree_t* tr)
+void xrbtree_clear(xrbtree_t* tr)
 {
-    xrb_iter_t iter = tr->root;
-    xrb_iter_t parent;
+    xrbtree_iter_t iter = tr->root;
+    xrbtree_iter_t parent;
 
     while (iter)
     {
@@ -605,7 +605,7 @@ void xrb_tree_clear(xrb_tree_t* tr)
         {
             parent = rb_parent(iter);
             if (tr->destroy_cb)
-                tr->destroy_cb(xrb_iter_data(iter));
+                tr->destroy_cb(xrbtree_iter_data(iter));
             free(iter);
             iter = parent;
         }
@@ -615,9 +615,9 @@ void xrb_tree_clear(xrb_tree_t* tr)
     tr->root = NULL;
 }
 
-xrb_iter_t xrb_tree_begin(xrb_tree_t* tr)
+xrbtree_iter_t xrbtree_begin(xrbtree_t* tr)
 {
-    xrb_iter_t iter = tr->root;
+    xrbtree_iter_t iter = tr->root;
 
     if (!iter) return NULL;
 
@@ -626,9 +626,9 @@ xrb_iter_t xrb_tree_begin(xrb_tree_t* tr)
     return iter;
 }
 
-xrb_iter_t xrb_iter_next(xrb_iter_t iter)
+xrbtree_iter_t xrbtree_iter_next(xrbtree_iter_t iter)
 {
-    xrb_node_t* parent;
+    xrbtree_node_t* parent;
 
     /*
      * If we have a right-hand child, go down and then left as far
@@ -655,9 +655,9 @@ xrb_iter_t xrb_iter_next(xrb_iter_t iter)
     return parent;
 }
 
-xrb_iter_t xrb_tree_rbegin(xrb_tree_t* tr)
+xrbtree_iter_t xrbtree_rbegin(xrbtree_t* tr)
 {
-    xrb_iter_t iter = tr->root;
+    xrbtree_iter_t iter = tr->root;
 
     if (!iter) return NULL;
 
@@ -666,9 +666,9 @@ xrb_iter_t xrb_tree_rbegin(xrb_tree_t* tr)
     return iter;
 }
 
-xrb_iter_t xrb_riter_next(xrb_iter_t iter)
+xrbtree_iter_t xrbtree_riter_next(xrbtree_iter_t iter)
 {
-    xrb_node_t* parent;
+    xrbtree_node_t* parent;
 
     /*
      * If we have a left-hand child, go down and then right as far

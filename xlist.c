@@ -32,16 +32,22 @@ void xlist_clear(xlist_t* xl)
 {
     xlist_iter_t iter = xlist_begin(xl);
 
-    if (xl->destroy_cb) while (xlist_iter_valid(xl, iter))
+    if (xl->destroy_cb)
     {
-        iter = iter->next;
-        xl->destroy_cb(xlist_iter_value(iter->prev));
-        free(iter->prev);
+        while (xlist_iter_valid(xl, iter))
+        {
+            iter = iter->next;
+            xl->destroy_cb(xlist_iter_value(iter->prev));
+            free(iter->prev);
+        }
     }
-    else while (xlist_iter_valid(xl, iter))
+    else
     {
-        iter = iter->next;
-        free(iter->prev);
+        while (xlist_iter_valid(xl, iter))
+        {
+            iter = iter->next;
+            free(iter->prev);
+        }
     }
 
     xl->size = 0;
@@ -62,9 +68,7 @@ xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue)
 
         ++xl->size;
         if (pvalue)
-        {
             xlist_set_value(xl, newi, pvalue);
-        }
     }
 
     return newi;
@@ -79,9 +83,7 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
     iter->next->prev = iter->prev;
 
     if (xl->destroy_cb)
-    {
         xl->destroy_cb(xlist_iter_value(iter));
-    }
     free(iter);
 
     return r;
@@ -112,9 +114,6 @@ xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue)
 void xlist_cut_free(xlist_t* xl, void* pvalue)
 {
     if (xl->destroy_cb)
-    {
         xl->destroy_cb(pvalue);
-    }
-
     free(xlist_value_iter(pvalue));
 }

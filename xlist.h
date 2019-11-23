@@ -5,22 +5,26 @@
 
 /* doubly-linked list, similar to C++ STL std::list */
 
+typedef struct xlist       xlist_t;
+typedef struct xlist_node  xlist_node_t;
+typedef struct xlist_node* xlist_iter_t;
+
 typedef void (*xlist_destroy_cb)(void* pvalue);
 
-typedef struct xlist_node
+struct xlist_node
 {
     struct xlist_node* prev;
     struct xlist_node* next;
     // char value[0];
-} xlist_node_t, *xlist_iter_t;
+};
 
-typedef struct xlist
+struct xlist
 {
     size_t size;
     size_t val_size;        // element value size in 'xlist_node_t'
     xlist_destroy_cb destroy_cb;    // called when element destroy
     xlist_node_t head;
-} xlist_t;
+};
 
 /* allocate memory for a 'xlist_t', 'val_size' is the size of element value.
    'cb' is called when element destroy, can be NULL, but it usually can't be NULL

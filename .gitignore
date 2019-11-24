@@ -4,3 +4,5 @@ test_xlist
 test_xarray
 test_xrb_tree
 test_xrb_map
+test_xstring
+test_xhash

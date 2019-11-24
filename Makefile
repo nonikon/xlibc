@@ -10,7 +10,10 @@ else
 CFLAGS += -O2
 endif
 
-TARGET = test_xlist test_xarray test_xrb_tree test_xrb_map
+TARGET = \
+	test_xlist test_xarray \
+	test_xrb_tree test_xrb_map \
+	test_xstring
 
 all : $(TARGET)
 
@@ -24,6 +27,9 @@ test_xrb_tree : xrbtree.o test_xrb_tree.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 test_xrb_map : xrbtree.o test_xrb_map.o
+	@echo "\tLD $@"
+	@$(CC) -o $@ $^ $(LDFLAGS)
+test_xstring : xstring.o test_xstring.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 

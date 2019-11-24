@@ -13,7 +13,7 @@ endif
 TARGET = \
 	test_xlist test_xarray \
 	test_xrb_tree test_xrb_map \
-	test_xstring
+	test_xstring test_xhash
 
 all : $(TARGET)
 
@@ -30,6 +30,9 @@ test_xrb_map : xrbtree.o test_xrb_map.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 test_xstring : xstring.o test_xstring.o
+	@echo "\tLD $@"
+	@$(CC) -o $@ $^ $(LDFLAGS)
+test_xhash : xhash.o test_xhash.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 

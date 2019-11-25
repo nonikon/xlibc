@@ -5,15 +5,14 @@
 
 static int buckets_expand(xhash_t* xh)
 {
+    size_t i;
     size_t new_sz = xh->bkt_size << 1;
     xhash_node_t** new_bkts = realloc(xh->buckets,
                         sizeof(xhash_node_t*) * new_sz);
-
-    if (!new_bkts) return -1;
-
-    size_t i;
     xhash_iter_t unlinked;
     xhash_iter_t iter;
+
+    if (!new_bkts) return -1;
 
     /* rehash */
     for (i = 0; i < xh->bkt_size; ++i)
@@ -199,7 +198,9 @@ void xhash_clear(xhash_t* xh)
 
 xhash_iter_t xhash_begin(xhash_t* xh)
 {
-    for (size_t i = 0; i < xh->bkt_size; ++i)
+    size_t i;
+
+    for (i = 0; i < xh->bkt_size; ++i)
     {
         if (xh->buckets[i])
             return xh->buckets[i];

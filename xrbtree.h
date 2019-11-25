@@ -66,7 +66,7 @@ xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata);
 /* find an element with specific data. return an iterator to the element with specific data,
  * return 'NULL' if not found. */
 xrbtree_iter_t xrbtree_find(xrbtree_t* tr, const void* pdata);
-/* remove an element at 'iter', iter' MUST be valid. */
+/* remove an element at 'iter', 'iter' MUST be valid. */
 void xrbtree_erase(xrbtree_t* tr, xrbtree_iter_t iter);
 /* remove all elements in 'tr'. */
 void xrbtree_clear(xrbtree_t* tr);

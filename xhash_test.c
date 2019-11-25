@@ -59,8 +59,6 @@ void test()
     for (int i = BEGIN_VALUE + 111; i < BEGIN_VALUE + 120; ++i)
     {
         sprintf(myst.key, "%d", i);
-        myst.value = i;
-
         xhash_remove(xh, xhash_get(xh, &myst));
     }
 
@@ -70,7 +68,6 @@ void test()
     for (int i = BEGIN_VALUE; i < END_VALUE; ++i)
     {
         sprintf(myst.key, "%d", i);
-        myst.value = i;
 
         iter = xhash_get(xh, &myst);
         if (xhash_iter_valid(iter)) ;/*
@@ -82,13 +79,17 @@ void test()
     }
 #undef BEGIN_VALUE
 #undef END_VALUE
+    // find element in another way!
+    // but this only work when 'key' is the first member in 'mystruct_t'!
+    iter = xhash_get(xh, "311111900");
+    if (xhash_iter_valid(iter))
+        printf("found!!!!!!!!!! %d\n", ((mystruct_t*)xhash_iter_data(iter))->value);
 
     // traverse
     for (xhash_iter_t iter = xhash_begin(xh);
             xhash_iter_valid(iter); iter = xhash_iter_next(xh, iter))
     {
         printf("%d ", ((mystruct_t*)xhash_iter_data(iter))->value);
-
     }
     printf("\n");
 

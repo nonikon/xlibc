@@ -1,67 +1,63 @@
 #include <stdio.h>
 #include <string.h>     // memset(), strerror()
 #include <stdlib.h>     // malloc()
+
 #include "xarray.h"
+
+typedef struct
+{
+    int a, b;
+} mystruct_t;
 
 void traverse(xarray_t* array)
 {
-    xarray_iter_t iter;
-
-    xarray_begin(array, &iter);
-    while (xarray_iter_valid(&iter))
+    for (xarray_iter_t iter = xarray_begin(array);
+            xarray_iter_valid(iter); iter = xarray_iter_next(iter))
     {
-        printf("array[%d] = %s\n",
-            xarray_iter_index(&iter), (char*)xarray_iter_value(&iter));
-        xarray_iter_next(&iter);
+        mystruct_t* p = xarray_iter_value(iter);
+        printf("array[%d] = %d_%d\n", xarray_iter_index(iter), p->a, p->b);
     }
-    printf("blocks = %d, values = %d\n", array->blocks, array->values);
+    printf("blocks = %ld, values = %ld\n", array->blocks, array->values);
+}
+void on_destroy(void* p)
+{
+    printf("destroy %d_%d\n", ((mystruct_t*)p)->a, ((mystruct_t*)p)->b);
 }
 
 void test()
 {
-    xarray_t* array = xarray_new(NULL);
+    xarray_t* array = xarray_new(sizeof(mystruct_t), on_destroy);
+    mystruct_t myst;
 
-    xarray_set(array, 10024, "10024");
-    xarray_set(array, 10025, "10025");
-    xarray_set(array, 10027, "10027");
-    xarray_set(array, 10028, "10028");
-    xarray_set(array, 10029, "10029");
-    xarray_set(array, 14, "14");
+    myst.a = 100; myst.b = 24;
+    xarray_set(array, 10024, &myst);
+    myst.a = 100; myst.b = 25;
+    xarray_set(array, 10025, &myst);
+    myst.a = 100; myst.b = 26;
+    xarray_set(array, 10026, &myst);
+    myst.a = 100; myst.b = 27;
+    xarray_set(array, 10027, &myst);
+    myst.a = 100; myst.b = 28;
+    xarray_set(array, 10028, &myst);
+    myst.a = 100; myst.b = 29;
+    xarray_set(array, 10029, &myst);
+    myst.a = 101; myst.b = 24;
+    xarray_set(array, 10024, &myst); // 10024 already inserted
+    myst.a = 0; myst.b = 14;
+    xarray_set(array, 14, &myst);
     traverse(array);
+
+    printf("\n");
+    xarray_unset(array, 10028);
+    xarray_unset(array, 10030);
+    xarray_unset(array, 14);
+    traverse(array);
+
+    printf("\narray[10027] = _%d\n",
+            ((mystruct_t*)xarray_get(array, 10027))->b);
 
     printf("\n");
     xarray_clear(array);
-    xarray_set(array, 9999990, "9999990");
-    xarray_set(array, 9999991, "9999991");
-    xarray_set(array, 9999992, "9999992");
-    xarray_set(array, 9999993, "9999993");
-    xarray_set(array, 9999994, "9999994");
-    traverse(array);
-
-    printf("\n");
-    xarray_unset(array, 9999992);
-    xarray_unset(array, 9999995);
-    traverse(array);
-
-    printf("\narray[9999990] = %s\n", (char*)xarray_get(array, 9999990));
-
-    xarray_free(array);
-}
-
-void on_destroy(void* pvalue)
-{
-    printf("free %s\n", (char*)pvalue);
-    free(pvalue);
-}
-void test2()
-{
-    xarray_t* array = xarray_new(on_destroy);
-
-    xarray_set(array, 9999990, strdup("9999990"));
-    xarray_set(array, 9999991, strdup("9999991"));
-    xarray_set(array, 9999992, strdup("9999992"));
-    xarray_set(array, 9999993, strdup("9999993"));
-    xarray_set(array, 9999990, strdup("9999990x"));
     traverse(array);
 
     xarray_free(array);
@@ -69,7 +65,6 @@ void test2()
 
 int main(int argc, char** argv)
 {
-    // test();
-    test2();
+    test();
     return 0;
 }

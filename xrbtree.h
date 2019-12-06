@@ -3,10 +3,14 @@
 
 #include <stddef.h>
 
-/*
- * Red-black tree implementation is from linux kernel v5.3.7. (https://www.kernel.org/)
- * Can be used to implement 'set' and 'map' container.
- */
+/* Red-black tree implementation is from linux kernel v5.3.7. (https://www.kernel.org/)
+ * Can be used to implement 'set' and 'map' container. */
+
+/* cache can decrease memory allocation. node will be put into cache
+ * when it being erased, and next insertion will pop one node from
+ * cache. define 'XRBTREE_NO_CACHE' to disable it. */
+
+// #define XRBTREE_NO_CACHE
 
 typedef struct xrbtree       xrbtree_t;
 typedef struct xrbtree_node  xrbtree_node_t;
@@ -27,6 +31,9 @@ struct xrbtree {
     xrbtree_destroy_cb destroy_cb;
     size_t             data_size;
     size_t             size;
+#ifndef XRBTREE_NO_CACHE
+    xrbtree_node_t*    cache;
+#endif
     xrbtree_node_t*    root;
 };
 
@@ -35,8 +42,14 @@ struct xrbtree {
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
 xrbtree_t* xrbtree_new(size_t data_size, xrbtree_compare_cb compare_cb,
                 xrbtree_destroy_cb destroy_cb);
+
 /* release memory for a 'xrbtree_t'. */
 void xrbtree_free(xrbtree_t* tr);
+
+#ifndef XLIST_NO_CACHE
+/* free all cache nodes in a 'xrbtree_t'. */
+void xrbtree_cache_free(xrbtree_t* xl);
+#endif
 
 /* return the number of elements. */
 #define xrbtree_size(tr)       ((tr)->size)
@@ -45,10 +58,13 @@ void xrbtree_free(xrbtree_t* tr);
 
 /* return an iterator to the beginning. */
 xrbtree_iter_t xrbtree_begin(xrbtree_t* tr);
+
 /* return the next iterator of 'iter'. */
 xrbtree_iter_t xrbtree_iter_next(xrbtree_iter_t iter);
+
 /* return a reverse iterator to the beginning. */
 xrbtree_iter_t xrbtree_rbegin(xrbtree_t* tr);
+
 /* return the next reverse iterator of 'iter'. */
 xrbtree_iter_t xrbtree_riter_next(xrbtree_iter_t iter);
 
@@ -63,12 +79,15 @@ xrbtree_iter_t xrbtree_riter_next(xrbtree_iter_t iter);
  * the inserted element, return 'NULL' when out of memory.
  * if the data is already exist, do nothing an return it's iterator. */
 xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata);
+
 /* find an element with specific data. return an iterator to the element with specific data,
  * return 'NULL' if not found. */
 xrbtree_iter_t xrbtree_find(xrbtree_t* tr, const void* pdata);
+
 /* remove an element at 'iter', 'iter' MUST be valid. */
 void xrbtree_erase(xrbtree_t* tr, xrbtree_iter_t iter);
-/* remove all elements in 'tr'. */
+
+/* remove all elements (no cache) in 'tr'. */
 void xrbtree_clear(xrbtree_t* tr);
 
 #endif // _XRBTREE_H_

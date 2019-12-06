@@ -498,6 +498,9 @@ xrbtree_t* xrbtree_new(size_t data_size, xrbtree_compare_cb compare_cb,
         tr->destroy_cb = destroy_cb;
         tr->data_size = data_size;
         tr->size = 0;
+#ifndef XRBTREE_NO_CACHE
+        tr->cache = NULL;
+#endif
         tr->root = NULL;
     }
 
@@ -509,6 +512,9 @@ void xrbtree_free(xrbtree_t* tr)
     if (tr)
     {
         xrbtree_clear(tr);
+#ifndef XRBTREE_NO_CACHE
+        xrbtree_cache_free(tr);
+#endif
         free(tr);
     }
 }
@@ -532,16 +538,29 @@ xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata)
             return *iter;
     }
 
-    xrbtree_node_t* nwnd = malloc(sizeof(xrbtree_node_t) + tr->data_size);
+    xrbtree_node_t* nwnd;
 
-    if (nwnd)
+#ifndef XRBTREE_NO_CACHE
+    if (tr->cache)
     {
-        memcpy(xrbtree_iter_data(nwnd), pdata, tr->data_size);
-
-        __rb_insert_node(nwnd, parent, iter);
-        __rb_insert_color(nwnd, &tr->root);
-        ++tr->size;
+        nwnd = tr->cache;
+        tr->cache = nwnd->rb_right;
     }
+    else
+    {
+#endif
+        nwnd = malloc(sizeof(xrbtree_node_t) + tr->data_size);
+        if (!nwnd)
+            return NULL;
+#ifndef XRBTREE_NO_CACHE
+    }
+#endif
+
+    memcpy(xrbtree_iter_data(nwnd), pdata, tr->data_size);
+
+    __rb_insert_node(nwnd, parent, iter);
+    __rb_insert_color(nwnd, &tr->root);
+    ++tr->size;
 
     return nwnd;
 }
@@ -577,10 +596,30 @@ void xrbtree_erase(xrbtree_t* tr, xrbtree_iter_t iter)
 
     if (tr->destroy_cb)
         tr->destroy_cb(xrbtree_iter_data(iter));
+
+#ifndef XRBTREE_NO_CACHE
+    iter->rb_right = tr->cache;
+    tr->cache = iter;
+#else
     free(iter);
+#endif
 
     --tr->size;
 }
+
+#ifndef XRBTREE_NO_CACHE
+void xrbtree_cache_free(xrbtree_t* tr)
+{
+    xrbtree_node_t* c = tr->cache;
+
+    while (c)
+    {
+        tr->cache = c->rb_right;
+        free(c);printf("free cache node\n");
+        c = tr->cache;
+    }
+}
+#endif
 
 void xrbtree_clear(xrbtree_t* tr)
 {

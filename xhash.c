@@ -70,6 +70,9 @@ xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
         xh->data_size = data_size;
         xh->size = 0;
         xh->loadfactor = XHASH_DEFAULT_LOADFACTOR;
+#ifndef XHASH_NO_CACHE
+        xh->cache = NULL;
+#endif
 
         xh->buckets = malloc(sizeof(xhash_node_t*) * xh->bkt_size);
 
@@ -90,6 +93,9 @@ void xhash_free(xhash_t* xh)
     if (xh)
     {
         xhash_clear(xh);
+#ifndef XHASH_NO_CACHE
+        xhash_cache_free(xh);
+#endif
         free(xh->buckets);
         free(xh);
     }
@@ -113,22 +119,33 @@ xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
         iter = &(*iter)->next;
     }
 
-    *iter = malloc(sizeof(xhash_node_t) + xh->data_size);
-
-    if (*iter)
+#ifndef XHASH_NO_CACHE
+    if (xh->cache)
     {
-        memcpy(xhash_iter_data(*iter), pdata, xh->data_size);
-
-        (*iter)->prev = prev;
-        (*iter)->next = NULL;
-        (*iter)->hash = hash;
-
-        ++xh->size;
-
-        /* check loadfactor */
-        if (xh->size * 100 / xh->bkt_size > xh->loadfactor)
-            buckets_expand(xh);
+        *iter = xh->cache;
+        xh->cache = (*iter)->next;
     }
+    else
+    {
+#endif
+        *iter = malloc(sizeof(xhash_node_t) + xh->data_size);
+        if (!*iter)
+            return NULL;
+#ifndef XHASH_NO_CACHE
+    }
+#endif
+
+    memcpy(xhash_iter_data(*iter), pdata, xh->data_size);
+
+    (*iter)->prev = prev;
+    (*iter)->next = NULL;
+    (*iter)->hash = hash;
+
+    ++xh->size;
+
+    /* check loadfactor */
+    if (xh->size * 100 / xh->bkt_size > xh->loadfactor)
+        buckets_expand(xh);
 
     return *iter;
 }
@@ -164,7 +181,13 @@ void xhash_remove(xhash_t* xh, xhash_iter_t iter)
 
     if (xh->destroy_cb)
         xh->destroy_cb(xhash_iter_data(iter));
+
+#ifndef XHASH_NO_CACHE
+    iter->next = xh->cache;
+    xh->cache = iter;
+#else
     free(iter);
+#endif
 
     --xh->size;
 }
@@ -195,6 +218,20 @@ void xhash_clear(xhash_t* xh)
 
     xh->size = 0;
 }
+
+#ifndef XHASH_NO_CACHE
+void xhash_cache_free(xhash_t* xh)
+{
+    xhash_node_t* c = xh->cache;
+
+    while (c)
+    {
+        xh->cache = c->next;
+        free(c);
+        c = xh->cache;
+    }
+}
+#endif
 
 xhash_iter_t xhash_begin(xhash_t* xh)
 {

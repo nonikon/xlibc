@@ -5,6 +5,12 @@
 
 /* Hash table, logic base on java hash table. */
 
+/* cache can decrease memory allocation. node will be put into cache
+ * when it being erased, and next insertion will pop one node from
+ * cache. define 'XHASH_NO_CACHE' to disable it. */
+
+// #define XHASH_NO_CACHE
+
 #ifndef XHASH_DEFAULT_SIZE
 #define XHASH_DEFAULT_SIZE          64 // MUST be 2^n
 #endif
@@ -38,6 +44,9 @@ struct xhash
     size_t           data_size;
     size_t           size;        // element (node) count
     size_t           loadfactor;
+#ifndef XHASH_NO_CACHE
+    xhash_node_t*    cache;       // cache nodes
+#endif
     xhash_node_t**   buckets;
 };
 
@@ -48,8 +57,14 @@ struct xhash
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
 xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
             xhash_equal_cb equal_cb, xhash_destroy_cb destroy_cb);
+
 /* release memory for a 'xhash_t'. */
 void xhash_free(xhash_t* xh);
+
+#ifndef XHASH_NO_CACHE
+/* free all cache nodes in a 'xhash_t'. */
+void xhash_cache_free(xhash_t* xh);
+#endif
 
 /* set loadfactor of 'xh', 'factor' is an interger which
  * standfor loadfactor percent. */
@@ -63,6 +78,7 @@ void xhash_free(xhash_t* xh);
 
 /* return an iterator to the beginning. */
 xhash_iter_t xhash_begin(xhash_t* xh);
+
 /* return the next iterator of 'iter'. */
 xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter);
 
@@ -77,12 +93,15 @@ xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter);
  * the inserted element, return 'NULL' when out of memory.
  * if the data is already exist, do nothing an return it's iterator. */
 xhash_iter_t xhash_put(xhash_t* xh, const void* pdata);
+
 /* find an element with specific data. return an iterator to the element with specific data,
  * return 'NULL' if not found. */
 xhash_iter_t xhash_get(xhash_t* xh, const void* pdata);
+
 /* remove an element at 'iter', 'iter' MUST be valid. */
 void xhash_remove(xhash_t* xh, xhash_iter_t iter);
-/* remove all elements in 'xh'. */
+
+/* remove all elements (no cache) in 'xh'. */
 void xhash_clear(xhash_t* xh);
 
 /* Some helper hash function, can be used in 'xhash_hash_cb'. */

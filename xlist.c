@@ -41,6 +41,7 @@ void xlist_clear(xlist_t* xl)
     while (xlist_iter_valid(xl, iter))
     {
         iter = iter->next;
+
         if (xl->destroy_cb)
             xl->destroy_cb(xlist_iter_value(iter->prev));
         free(iter->prev);
@@ -59,7 +60,7 @@ xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue)
     if (xl->cache)
     {
         newi = xl->cache;
-        xl->cache = xl->cache->next;
+        xl->cache = newi->next;
     }
     else
     {

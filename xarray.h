@@ -27,10 +27,20 @@
  *     Index 0                   Index 2N+1
  */
 
+/*
+ * cache can decrease memory allocation. node (or block) will
+ * be put into cache when it being erased, and next insertion
+ * will pop one node (or block) from cache. define 'XARRAY_NO_CACHE'
+ * to disable it.
+ */
+
+// #define XARRAY_NO_CACHE
+
+#ifndef XARRAY_BITS
 #define XARRAY_BITS         4   // 1, 2, 4, 8
+#endif
 
 #define XARRAY_BLOCK_SIZE   (1 << XARRAY_BITS)
-#define XARRAY_MASK         (XARRAY_BLOCK_SIZE - 1)
 
 typedef unsigned int xuint;
 // typedef unsigned long xuint;
@@ -66,28 +76,47 @@ struct xarray
                                     /* current just for DEBUG. */
     size_t            val_size;
     xarray_destroy_cb destroy_cb;   /* called when value is removed. */
+#ifndef XARRAY_NO_CACHE
+    xarray_node_t*    nod_cache;    /* cache nodes. */
+    xarray_block_t*   blk_cache;    /* cache blocks. */
+#endif
     xarray_block_t    root;         /* root block. */
 };
 
+/* allocate memory and initialize a 'xarray_t'. */
 xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb);
+
+/* release memory for a 'xhash_t'. */
 void xarray_free(xarray_t* array);
+
+#ifndef XARRAY_NO_CACHE
+/* free all cache nodes in a 'xhash_t'. */
+void xarray_node_cache_free(xarray_t* array);
+
+/* free all cache blocks in a 'xhash_t'. */
+void xarray_block_cache_free(xarray_t* array);
+#endif
 
 /* set value at 'index', 'pvalue' can be 'NULL' (means set it later, just allocate memory).
  * if 'index' has already been set, it will be unset (call 'destroy_cb') first.
  * reuturn a pointer pointed to new allocated value. return 'NULL' if out of memory. 
  * the return value can call 'xarray_value_iter' to get it's iterator. */
 void* xarray_set(xarray_t* array, xuint index, void* pvalue);
+
 /* get value at 'index'.
  * return a pointer pointed to value, return 'NULL' if value has not been set.
  * the return value can call 'xarray_value_iter' to get it's iterator. */
 void* xarray_get(xarray_t* array, xuint index);
+
 /* remove value at 'index'. */
 void xarray_unset(xarray_t* array, xuint index);
-/* clear all values. */
+
+/* clear all values (no cache). */
 void xarray_clear(xarray_t* array);
 
 /* return an iterator to the beginning. */
 xarray_iter_t xarray_begin(xarray_t* array);
+
 /* return the next iterator of 'iter'. */
 xarray_iter_t xarray_iter_next(xarray_iter_t iter);
 

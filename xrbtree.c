@@ -8,7 +8,7 @@
  */
 
 #define	RB_RED              0
-#define	RB_BLACK	        1
+#define	RB_BLACK            1
 
 #define __rb_parent(pc)     ((xrbtree_node_t *)(pc & ~3))
 #define rb_parent(rb)       ((xrbtree_node_t *)((rb)->rb_parent_color & ~3))
@@ -615,7 +615,7 @@ void xrbtree_cache_free(xrbtree_t* tr)
     while (c)
     {
         tr->cache = c->rb_right;
-        free(c);printf("free cache node\n");
+        free(c);
         c = tr->cache;
     }
 }

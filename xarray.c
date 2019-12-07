@@ -3,6 +3,10 @@
 
 #include "xarray.h"
 
+#define XARRAY_MASK         (XARRAY_BLOCK_SIZE - 1)
+/* sizeof(xuint) * 8 - XARRAY_BITS */
+#define XARRAY_MAX_SHIFT    ((sizeof(xuint) << 3) - XARRAY_BITS)
+
 xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb)
 {
     xarray_t* array = malloc(sizeof(xarray_t));
@@ -12,9 +16,8 @@ xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb)
         memset(array, 0, sizeof(xarray_t));
 
         array->val_size = val_size;
-        array->destroy_cb  = cb;
-        /* sizeof(xuint) * 8 - XARRAY_BITS */
-        array->root.shift  = (sizeof(xuint) << 3) - XARRAY_BITS;
+        array->destroy_cb = cb;
+        array->root.shift = XARRAY_MAX_SHIFT;
     }
 
     return array;
@@ -25,6 +28,10 @@ void xarray_free(xarray_t* array)
     if (array)
     {
         xarray_clear(array);
+#ifndef XARRAY_NO_CACHE
+        xarray_node_cache_free(array);
+        xarray_block_cache_free(array);
+#endif
         free(array);
     }
 }
@@ -42,10 +49,21 @@ void* xarray_set(xarray_t* array, xuint index, void* pvalue)
 
         if (!child)
         {
-            child = malloc(sizeof(xarray_block_t));
-
-            if (!child) return NULL;
-
+#ifndef XARRAY_NO_CACHE
+            if (array->blk_cache)
+            {
+                child = array->blk_cache;
+                array->blk_cache = child->parent_block;
+            }
+            else
+            {
+#endif
+                child = malloc(sizeof(xarray_block_t));
+                if (!child)
+                    return NULL;
+#ifndef XARRAY_NO_CACHE
+            }
+#endif
             memset(child, 0, sizeof(xarray_block_t));
 
             child->parent_block = parent;
@@ -67,10 +85,21 @@ void* xarray_set(xarray_t* array, xuint index, void* pvalue)
 
     if (!node)
     {
-        node = malloc(sizeof(xarray_node_t) + array->val_size);
-
-        if (!node) return NULL;
-
+#ifndef XARRAY_NO_CACHE
+        if (array->nod_cache)
+        {
+            node = array->nod_cache;
+            array->nod_cache = (xarray_node_t*)node->block;
+        }
+        else
+        {
+#endif
+            node = malloc(sizeof(xarray_node_t) + array->val_size);
+            if (!node)
+                return NULL;
+#ifndef XARRAY_NO_CACHE
+        }
+#endif
         node->block = parent;
         node->index = index;
 
@@ -113,21 +142,33 @@ void xarray_unset(xarray_t* array, xuint index)
         /* destroy a node */
         if (array->destroy_cb)
             array->destroy_cb(xarray_iter_value(
-                                (xarray_iter_t)block->values[i]));
+                        (xarray_iter_t)block->values[i]));
+#ifndef XARRAY_NO_CACHE
+        /* use 'xarray_node_t.block' to store next cache node */
+        ((xarray_node_t*)block->values[i])->block
+                        = (xarray_block_t*)array->nod_cache;
+        array->nod_cache = block->values[i];
+#else
         free(block->values[i]);
-
+#endif
         --array->values;
         --block->used;
-        
-        /* release chain if 'used == 0' */
+
+        /* release block chain if 'used == 0' */
         while (!block->used)
         {
             i = block->parent_pos;
             block = block->parent_block;
 
             /* destroy a block */
+#ifndef XARRAY_NO_CACHE
+            /* use 'xarray_block_t.parent_block' to store next cache block */
+            ((xarray_block_t*)block->values[i])
+                        ->parent_block = array->blk_cache;
+            array->blk_cache = block->values[i];
+#else
             free(block->values[i]);
-
+#endif
             --array->blocks;
             --block->used;
         }
@@ -151,8 +192,12 @@ void* xarray_get(xarray_t* array, xuint index)
             return NULL;
     }
 
-    return xarray_iter_value(
-        (xarray_iter_t)block->values[index & XARRAY_MASK]);
+    i = index & XARRAY_MASK;
+
+    if (block->values[i])
+        return xarray_iter_value((xarray_iter_t)block->values[i]);
+
+    return NULL;
 }
 
 void xarray_clear(xarray_t* array)
@@ -164,26 +209,23 @@ void xarray_clear(xarray_t* array)
     {
         if (i < XARRAY_BLOCK_SIZE)
         {
-            if (block->values[i])
-            {
-                if (block->shift != 0) /* is a block, step in it */
-                {
-                    block = block->values[i];
-                    i = 0;
-                }
-                else /* is a node, destroy it */
-                {
-                    if (array->destroy_cb)
-                        array->destroy_cb(xarray_iter_value(
-                                    (xarray_iter_t)block->values[i]));
-                    free(block->values[i]);
-                    
-                    --array->values;
-                    ++i;
-                }
-            }
-            else
+            if (!block->values[i])
                 ++i;
+            else if (block->shift != 0) /* is a block, step in it */
+            {
+                block = block->values[i];
+                i = 0;
+            }
+            else /* is a node, destroy it */
+            {
+                if (array->destroy_cb)
+                    array->destroy_cb(xarray_iter_value(
+                                (xarray_iter_t)block->values[i]));
+                free(block->values[i]);
+
+                --array->values;
+                ++i;
+            }
         }
         else
         {
@@ -202,8 +244,34 @@ void xarray_clear(xarray_t* array)
     while (1);
 
     memset(&array->root, 0, sizeof(xarray_block_t));
-    array->root.shift = (sizeof(xuint) << 3) - XARRAY_BITS;
+    array->root.shift = XARRAY_MAX_SHIFT;
 }
+
+#ifndef XARRAY_NO_CACHE
+void xarray_node_cache_free(xarray_t* array)
+{
+    xarray_node_t* c = array->nod_cache;
+
+    while (c)
+    {
+        array->nod_cache = (xarray_node_t*)c->block;
+        free(c);
+        c = array->nod_cache;
+    }
+}
+
+void xarray_block_cache_free(xarray_t* array)
+{
+    xarray_block_t* c = array->blk_cache;
+
+    while (c)
+    {
+        array->blk_cache = c->parent_block;
+        free(c);
+        c = array->blk_cache;
+    }
+}
+#endif
 
 xarray_iter_t xarray_begin(xarray_t* array)
 {
@@ -212,18 +280,15 @@ xarray_iter_t xarray_begin(xarray_t* array)
 
     while (i < XARRAY_BLOCK_SIZE)
     {
-        if (block->values[i])
-        {
-            if (block->shift != 0) /* is a block */
-            {
-                block = block->values[i];
-                i = 0;
-            }
-            else /* is a node */
-                return block->values[i];
-        }
-        else
+        if (!block->values[i])
             ++i;
+        else if (block->shift != 0) /* is a block */
+        {
+            block = block->values[i];
+            i = 0;
+        }
+        else /* is a node */
+            return block->values[i];
     }
 
     return NULL;
@@ -238,18 +303,15 @@ xarray_iter_t xarray_iter_next(xarray_iter_t iter)
     {
         if (i < XARRAY_BLOCK_SIZE)
         {
-            if (block->values[i])
-            {
-                if (block->shift != 0)
-                {
-                    block = block->values[i];
-                    i = 0;
-                }
-                else
-                    return block->values[i];
-            }
-            else
+            if (!block->values[i])
                 ++i;
+            else if (block->shift != 0) /* is a block */
+            {
+                block = block->values[i];
+                i = 0;
+            }
+            else /* is a node */
+                return block->values[i];
         }
         else
         {

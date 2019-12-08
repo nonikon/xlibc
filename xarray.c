@@ -42,7 +42,7 @@ void* xarray_set(xarray_t* array, xuint index, void* pvalue)
     xarray_block_t* child;
     int i;
 
-    while (parent->shift > 0)
+    do
     {
         i = (index >> parent->shift) & XARRAY_MASK;
         child = parent->values[i];
@@ -78,6 +78,7 @@ void* xarray_set(xarray_t* array, xuint index, void* pvalue)
 
         parent = child;
     }
+    while (parent->shift > 0);
 
     i = index & XARRAY_MASK;
 
@@ -110,7 +111,7 @@ void* xarray_set(xarray_t* array, xuint index, void* pvalue)
     }
     else if (array->destroy_cb)
     {
-        // index has already been set, destroy it
+        /* index has already been set, destroy it */
         array->destroy_cb(xarray_iter_value(node));
     }
 
@@ -125,7 +126,7 @@ void xarray_unset(xarray_t* array, xuint index)
     xarray_block_t* block = &array->root;
     int i;
 
-    while (block->shift > 0)
+    do
     {
         i = (index >> block->shift) & XARRAY_MASK;
 
@@ -134,6 +135,7 @@ void xarray_unset(xarray_t* array, xuint index)
         else
             return; /* has not been set */
     }
+    while (block->shift > 0);
 
     i = index & XARRAY_MASK;
 
@@ -182,7 +184,7 @@ void* xarray_get(xarray_t* array, xuint index)
     xarray_block_t* block = &array->root;
     int i;
 
-    while (block->shift > 0)
+    do
     {
         i = (index >> block->shift) & XARRAY_MASK;
 
@@ -191,6 +193,7 @@ void* xarray_get(xarray_t* array, xuint index)
         else
             return NULL;
     }
+    while (block->shift > 0);
 
     i = index & XARRAY_MASK;
 
@@ -278,7 +281,7 @@ xarray_iter_t xarray_begin(xarray_t* array)
     xarray_block_t* block = &array->root;
     int i = 0;
 
-    while (i < XARRAY_BLOCK_SIZE)
+    do
     {
         if (!block->values[i])
             ++i;
@@ -290,6 +293,7 @@ xarray_iter_t xarray_begin(xarray_t* array)
         else /* is a node */
             return block->values[i];
     }
+    while (i < XARRAY_BLOCK_SIZE);
 
     return NULL;
 }

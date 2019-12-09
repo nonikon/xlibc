@@ -523,6 +523,7 @@ xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata)
 {
     xrbtree_iter_t* iter = &tr->root;
     xrbtree_node_t* parent = NULL;
+    xrbtree_node_t* nwnd;
     int result;
 
     while (*iter)
@@ -537,8 +538,6 @@ xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata)
         else
             return *iter;
     }
-
-    xrbtree_node_t* nwnd;
 
 #ifndef XRBTREE_NO_CACHE
     if (tr->cache)
@@ -555,11 +554,11 @@ xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata)
 #ifndef XRBTREE_NO_CACHE
     }
 #endif
-
     memcpy(xrbtree_iter_data(nwnd), pdata, tr->data_size);
 
     __rb_insert_node(nwnd, parent, iter);
     __rb_insert_color(nwnd, &tr->root);
+
     ++tr->size;
 
     return nwnd;

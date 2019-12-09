@@ -73,7 +73,6 @@ xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
 #ifndef XHASH_NO_CACHE
         xh->cache = NULL;
 #endif
-
         xh->buckets = malloc(sizeof(xhash_node_t*) * xh->bkt_size);
 
         if (!xh->buckets)
@@ -110,7 +109,7 @@ xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
     while (*iter)
     {
         if (hash == (*iter)->hash
-            && xh->equal_cb(xhash_iter_data(*iter), (void*)pdata))
+            && xh->equal_cb((void*)pdata, xhash_iter_data(*iter)))
         {
             return *iter;
         }
@@ -134,7 +133,6 @@ xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
 #ifndef XHASH_NO_CACHE
     }
 #endif
-
     memcpy(xhash_iter_data(*iter), pdata, xh->data_size);
 
     (*iter)->prev = prev;
@@ -158,7 +156,7 @@ xhash_iter_t xhash_get(xhash_t* xh, const void* pdata)
     while (iter)
     {
         if (hash == iter->hash
-            && xh->equal_cb(xhash_iter_data(iter), (void*)pdata))
+            && xh->equal_cb((void*)pdata, xhash_iter_data(iter)))
         {
             return iter;
         }
@@ -248,9 +246,12 @@ xhash_iter_t xhash_begin(xhash_t* xh)
 
 xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter)
 {
-    if (iter->next) return iter->next;
+    size_t i;
 
-    size_t i = iter->hash & (xh->bkt_size - 1);
+    if (iter->next)
+        return iter->next;
+
+    i = iter->hash & (xh->bkt_size - 1);
 
     while (++i < xh->bkt_size)
     {

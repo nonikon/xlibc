@@ -73,8 +73,12 @@ void xhash_cache_free(xhash_t* xh);
 
 /* return the number of elements. */
 #define xhash_size(xh)          ((xh)->size)
+
 /* check whether the container is empty. */
 #define xhash_empty(xh)         ((xh)->size == 0)
+
+/* return an iterator to the end. */
+#define xhash_end(xh)           NULL
 
 /* return an iterator to the beginning. */
 xhash_iter_t xhash_begin(xhash_t* xh);
@@ -84,8 +88,10 @@ xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter);
 
 /* check whether an iterator is valid. */
 #define xhash_iter_valid(iter)  ((iter) != NULL)
+
 /* return a pointer pointed to the data of 'iter', 'iter' MUST be valid. */
 #define xhash_iter_data(iter)   ((void*)((iter) + 1))
+
 /* return an iterator of an element data. */
 #define xhash_data_iter(pdata)  ((xhash_iter_t)(pdata) - 1)
 
@@ -94,8 +100,8 @@ xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter);
  * if the data is already exist, do nothing an return it's iterator. */
 xhash_iter_t xhash_put(xhash_t* xh, const void* pdata);
 
-/* find an element with specific data. return an iterator to the element with specific data,
- * return 'NULL' if not found. */
+/* find an element with specific data. return an iterator to
+ * the element with specific data, return 'NULL' if not found. */
 xhash_iter_t xhash_get(xhash_t* xh, const void* pdata);
 
 /* remove an element at 'iter', 'iter' MUST be valid. */
@@ -103,6 +109,18 @@ void xhash_remove(xhash_t* xh, xhash_iter_t iter);
 
 /* remove all elements (no cache) in 'xh'. */
 void xhash_clear(xhash_t* xh);
+
+/* find an element with specific data. return a pointer to the element
+ * with specific data, return 'XHASH_INVALID' if not found.
+ * the return value can call 'xhash_data_iter' to get it's iterator. */
+#define xhash_get_ex(xh, pdata) xhash_iter_data(xhash_get(xh, pdata))
+
+/* remove an element, 'pdata' should be the return value of 'xhash_get_ex'
+ * and not equal to 'XHASH_INVALID'. */
+#define xhash_remove_ex(xh, pdata) \
+                                xhash_remove(xh, xhash_data_iter(pdata))
+
+#define XHASH_INVALID           xhash_iter_data((xhash_iter_t)0)
 
 /* Some helper hash function, can be used in 'xhash_hash_cb'. */
 

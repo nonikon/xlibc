@@ -38,7 +38,7 @@ void xlist_clear(xlist_t* xl)
 {
     xlist_iter_t iter = xlist_begin(xl);
 
-    while (xlist_iter_valid(xl, iter))
+    while (iter != xlist_end(xl))
     {
         iter = iter->next;
 
@@ -52,7 +52,8 @@ void xlist_clear(xlist_t* xl)
     xl->head.next = iter;
 }
 
-xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue)
+xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter,
+            const void* pvalue)
 {
     xlist_iter_t newi;
 
@@ -77,9 +78,10 @@ xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue)
     iter->prev->next = newi;
     iter->prev = newi;
 
-    ++xl->size;
     if (pvalue)
         memcpy(xlist_iter_value(newi), pvalue, (xl)->val_size);
+
+    ++xl->size;
 
     return newi;
 }
@@ -88,7 +90,6 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
 {
     xlist_iter_t r = iter->next;
 
-    --xl->size;
     iter->prev->next = iter->next;
     iter->next->prev = iter->prev;
 
@@ -101,6 +102,7 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
 #else
     free(iter);
 #endif
+    --xl->size;
 
     return r;
 }
@@ -121,9 +123,10 @@ void xlist_cache_free(xlist_t* xl)
 
 void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
 {
-    --xl->size;
     iter->prev->next = iter->next;
     iter->next->prev = iter->prev;
+
+    --xl->size;
 
     return xlist_iter_value(iter);
 }
@@ -132,11 +135,12 @@ xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue)
 {
     xlist_iter_t newi = xlist_value_iter(pvalue);
 
-    ++xl->size;
     newi->next = iter;
     newi->prev = iter->prev;
     iter->prev->next = newi;
     iter->prev = newi;
+
+    ++xl->size;
 
     return newi;
 }

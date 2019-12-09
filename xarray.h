@@ -86,33 +86,19 @@ struct xarray
 /* allocate memory and initialize a 'xarray_t'. */
 xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb);
 
-/* release memory for a 'xhash_t'. */
+/* release memory for a 'xarray_t'. */
 void xarray_free(xarray_t* array);
 
 #ifndef XARRAY_NO_CACHE
-/* free all cache nodes in a 'xhash_t'. */
+/* free all cache nodes in a 'xarray_t'. */
 void xarray_node_cache_free(xarray_t* array);
 
-/* free all cache blocks in a 'xhash_t'. */
+/* free all cache blocks in a 'xarray_t'. */
 void xarray_block_cache_free(xarray_t* array);
 #endif
 
-/* set value at 'index', 'pvalue' can be 'NULL' (means set it later, just allocate memory).
- * if 'index' has already been set, it will be unset (call 'destroy_cb') first.
- * reuturn a pointer pointed to new allocated value. return 'NULL' if out of memory. 
- * the return value can call 'xarray_value_iter' to get it's iterator. */
-void* xarray_set(xarray_t* array, xuint index, void* pvalue);
-
-/* get value at 'index'.
- * return a pointer pointed to value, return 'NULL' if value has not been set.
- * the return value can call 'xarray_value_iter' to get it's iterator. */
-void* xarray_get(xarray_t* array, xuint index);
-
-/* remove value at 'index'. */
-void xarray_unset(xarray_t* array, xuint index);
-
-/* clear all values (no cache). */
-void xarray_clear(xarray_t* array);
+/* return an iterator to the end. */
+#define xarray_end(array)           NULL
 
 /* return an iterator to the beginning. */
 xarray_iter_t xarray_begin(xarray_t* array);
@@ -121,12 +107,45 @@ xarray_iter_t xarray_begin(xarray_t* array);
 xarray_iter_t xarray_iter_next(xarray_iter_t iter);
 
 /* return if 'iter' is valid. */
-#define xarray_iter_valid(iter)   ((iter) != NULL)
+#define xarray_iter_valid(iter)     ((iter) != NULL)
+
 /* return the index of 'iter', 'iter' MUST be valid. */
-#define xarray_iter_index(iter)   ((iter)->index)
+#define xarray_iter_index(iter)     ((iter)->index)
+
 /* return a poiniter pointed to the value at 'iter', 'iter' MUST be valid. */
-#define xarray_iter_value(iter)   ((void*)((iter) + 1))
-/* return an iterator of an element value. */
-#define xarray_value_iter(pvalue) ((xarray_iter_t)(pvalue) - 1)
+#define xarray_iter_value(iter)     ((void*)((iter) + 1))
+
+/* return an iterator of an value value. */
+#define xarray_value_iter(pvalue)   ((xarray_iter_t)(pvalue) - 1)
+
+/* set value at 'index', 'pvalue' can be 'NULL' (means set it later,
+ * just allocate memory). if 'index' has already been set, it will be
+ * unset (call 'destroy_cb') first. return an iterator to the value
+ * at 'index'. return 'NULL' if out of memory. */
+xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue);
+
+/* get value at 'index'. return an iterator to the value at index,
+ * return 'NULL' if value has not been set. */
+xarray_iter_t xarray_get(xarray_t* array, xuint index);
+
+/* remove value at 'index'. */
+void xarray_unset(xarray_t* array, xuint index);
+
+/* clear all values (no cache). */
+void xarray_clear(xarray_t* array);
+
+/* set value at 'index', 'pvalue' can be 'NULL' (means set it later,
+ * just allocate memory). if 'index' has already been set, it will be
+ * unset (call 'destroy_cb') first. return a pointer pointed to the
+ * value at 'index'. return 'XARRAY_INVALID' if out of memory. */
+#define xarray_set_ex(array, index, pvalue) \
+                                    xarray_iter_value(xarray_set(array, index, pvalue))
+
+/* get value at 'index'. return a pointer pointed to the value at index,
+ * return 'XARRAY_INVALID' if value has not been set.
+ * the return value can call 'xarray_value_iter' to get it's iterator. */
+#define xarray_get_ex(array, index) xarray_iter_value(xarray_get(array, index))
+
+#define XARRAY_INVALID              xarray_iter_value((xarray_iter_t)0)
 
 #endif // _XARRAY_H_

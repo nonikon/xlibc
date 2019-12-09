@@ -52,9 +52,16 @@ void xrbtree_cache_free(xrbtree_t* xl);
 #endif
 
 /* return the number of elements. */
-#define xrbtree_size(tr)       ((tr)->size)
+#define xrbtree_size(tr)        ((tr)->size)
+
 /* check whether the container is empty. */
-#define xrbtree_empty(tr)      ((tr)->size == 0)
+#define xrbtree_empty(tr)       ((tr)->size == 0)
+
+/* return an iterator to the end. */
+#define xrbtree_end(xh)         NULL
+
+/* return a reverse iterator to the end.  */
+#define xrbtree_rend(xh)        NULL
 
 /* return an iterator to the beginning. */
 xrbtree_iter_t xrbtree_begin(xrbtree_t* tr);
@@ -70,8 +77,10 @@ xrbtree_iter_t xrbtree_riter_next(xrbtree_iter_t iter);
 
 /* check whether an iterator is valid. */
 #define xrbtree_iter_valid(iter)    ((iter) != NULL)
+
 /* return a pointer pointed to the data of 'iter', 'iter' MUST be valid. */
 #define xrbtree_iter_data(iter)     ((void*)((iter) + 1))
+
 /* return an iterator of an element data. */
 #define xrbtree_data_iter(pdata)    ((xrbtree_iter_t)(pdata) - 1)
 
@@ -89,5 +98,16 @@ void xrbtree_erase(xrbtree_t* tr, xrbtree_iter_t iter);
 
 /* remove all elements (no cache) in 'tr'. */
 void xrbtree_clear(xrbtree_t* tr);
+
+/* find an element with specific data. return a pointer to the element
+ * with specific data, return 'XRBTREE_INVALID' if not found.
+ * the return value can call 'xrbtree_data_iter' to get it's iterator. */
+#define xrbtree_find_ex(tr, pdata)  xrbtree_iter_data(xrbtree_find(tr, pdata))
+
+/* remove an element, 'pdata' should be the return value of 'xrbtree_get_ex'
+ * and not equal to 'XRBTREE_INVALID'. */
+#define xrbtree_erase_ex(xh, pdata) xrbtree_erase(xh, xrbtree_data_iter(pdata))
+
+#define XRBTREE_INVALID             xrbtree_iter_data((xrbtree_iter_t)0)
 
 #endif // _XRBTREE_H_

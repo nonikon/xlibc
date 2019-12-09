@@ -36,7 +36,7 @@ void xarray_free(xarray_t* array)
     }
 }
 
-void* xarray_set(xarray_t* array, xuint index, void* pvalue)
+xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
 {
     xarray_block_t* parent = &array->root;
     xarray_block_t* child;
@@ -118,7 +118,7 @@ void* xarray_set(xarray_t* array, xuint index, void* pvalue)
     if (pvalue)
         memcpy(xarray_iter_value(node), pvalue, array->val_size);
 
-    return xarray_iter_value(node);
+    return node;
 }
 
 void xarray_unset(xarray_t* array, xuint index)
@@ -179,7 +179,7 @@ void xarray_unset(xarray_t* array, xuint index)
     }
 }
 
-void* xarray_get(xarray_t* array, xuint index)
+xarray_iter_t xarray_get(xarray_t* array, xuint index)
 {
     xarray_block_t* block = &array->root;
     int i;
@@ -195,12 +195,7 @@ void* xarray_get(xarray_t* array, xuint index)
     }
     while (block->shift > 0);
 
-    i = index & XARRAY_MASK;
-
-    if (block->values[i])
-        return xarray_iter_value((xarray_iter_t)block->values[i]);
-
-    return NULL;
+    return block->values[index & XARRAY_MASK];
 }
 
 void xarray_clear(xarray_t* array)
@@ -291,7 +286,9 @@ xarray_iter_t xarray_begin(xarray_t* array)
             i = 0;
         }
         else /* is a node */
+        {
             return block->values[i];
+        }
     }
     while (i < XARRAY_BLOCK_SIZE);
 
@@ -315,7 +312,9 @@ xarray_iter_t xarray_iter_next(xarray_iter_t iter)
                 i = 0;
             }
             else /* is a node */
+            {
                 return block->values[i];
+            }
         }
         else
         {
@@ -323,7 +322,8 @@ xarray_iter_t xarray_iter_next(xarray_iter_t iter)
             i = block->parent_pos + 1;
             block = block->parent_block;
 
-            if (!block) return NULL;
+            if (!block)
+                return NULL;
         }
     }
     while (1);

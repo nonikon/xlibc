@@ -20,7 +20,7 @@ void traverse(xrbtree_t* xs)
     char** pstr;
 
     printf("traverse size=%ld\n", xrbtree_size(xs));
-    while (xrbtree_iter_valid(iter))
+    while (iter != xrbtree_end(xs))
     {
         pstr = xrbtree_iter_data(iter);
         printf(" [%s], ", *pstr);
@@ -53,12 +53,11 @@ void test()
     traverse(xs);
 
     str = "u656i5kk";
-    xrbtree_iter_t iter = xrbtree_find(xs, &str);
-    if (xrbtree_iter_valid(iter))
+    char** pstr = xrbtree_find_ex(xs, &str);
+    if (pstr != XRBTREE_INVALID)
     {
-        char** pstr = xrbtree_iter_data(iter);
         printf("erase [%s]\n", *pstr);
-        xrbtree_erase(xs, iter);
+        xrbtree_erase_ex(xs, pstr);
         traverse(xs);
     }
 
@@ -150,7 +149,7 @@ void test_speed()
 
 int main(int argc, char** argv)
 {
-    // test();
-    test_speed();
+    test();
+    // test_speed();
     return 0;
 }

@@ -40,13 +40,14 @@ void insert_mystruct(xrbtree_t* rb, char* name, int age, char tag[16])
 }
 void find_mystruct(xrbtree_t* rb, char* name)
 {
-    mystruct_t myst = { name };
-    xrbtree_iter_t iter = xrbtree_find(rb, &myst);
+    // mystruct_t myst = { name };
+    // xrbtree_iter_t iter = xrbtree_find(rb, &myst);
+    mystruct_t* pmyst = xrbtree_find_ex(rb, &name);
 
-    if (xrbtree_iter_valid(iter))
+    if (pmyst != XRBTREE_INVALID)
     {
-        mystruct_t* p = xrbtree_iter_data(iter);
-        printf("found [%s]: age=%d, tag=%s\n", p->name, p->age, p->tag);
+        printf("found [%s]: age=%d, tag=%s\n",
+                pmyst->name, pmyst->age, pmyst->tag);
     }
     else
     {

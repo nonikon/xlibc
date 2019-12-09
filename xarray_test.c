@@ -12,7 +12,7 @@ typedef struct
 void traverse(xarray_t* array)
 {
     for (xarray_iter_t iter = xarray_begin(array);
-            xarray_iter_valid(iter); iter = xarray_iter_next(iter))
+            iter != xarray_end(array); iter = xarray_iter_next(iter))
     {
         mystruct_t* p = xarray_iter_value(iter);
         printf("array[%d] = %d_%d\n", xarray_iter_index(iter), p->a, p->b);
@@ -53,8 +53,9 @@ void test()
     xarray_unset(array, 14);
     traverse(array);
 
-    printf("\narray[10027] = _%d\n",
-            ((mystruct_t*)xarray_get(array, 10027))->b);
+    mystruct_t* pmyst = xarray_get_ex(array, 10027);
+    if (pmyst != XARRAY_INVALID)
+        printf("\nfound array[10027] = %d_%d\n", pmyst->a, pmyst->b);
 
     printf("\n");
     xarray_clear(array);

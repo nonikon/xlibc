@@ -37,13 +37,12 @@
 // #define XARRAY_NO_CACHE
 
 #ifndef XARRAY_BITS
-#define XARRAY_BITS         4   // 1, 2, 4, 8
+#define XARRAY_BITS         6   // [1, 8]
 #endif
 
-#define XARRAY_BLOCK_SIZE   (1 << XARRAY_BITS)
-
-typedef unsigned int xuint;
-// typedef unsigned long xuint;
+#ifndef XARRAY_INDEX_BITS
+#define XARRAY_INDEX_BITS   32  // 16, 32, 64
+#endif
 
 typedef struct xarray       xarray_t;
 typedef struct xarray_block xarray_block_t;
@@ -51,6 +50,16 @@ typedef struct xarray_node  xarray_node_t;
 typedef struct xarray_node* xarray_iter_t;
 
 typedef void (*xarray_destroy_cb)(void*);
+
+#if XARRAY_INDEX_BITS == 16
+typedef unsigned short xuint;
+#elif XARRAY_INDEX_BITS == 64
+typedef unsigned long long xuint;
+#else // 32
+typedef unsigned int xuint;
+#endif
+
+#define XARRAY_BLOCK_SIZE   (1 << XARRAY_BITS)
 
 struct xarray_node
 {

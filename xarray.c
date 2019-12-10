@@ -4,8 +4,12 @@
 #include "xarray.h"
 
 #define XARRAY_MASK         (XARRAY_BLOCK_SIZE - 1)
-/* sizeof(xuint) * 8 - XARRAY_BITS */
-#define XARRAY_MAX_SHIFT    ((sizeof(xuint) << 3) - XARRAY_BITS)
+
+#if XARRAY_INDEX_BITS % XARRAY_BITS == 0
+#define XARRAY_MAX_SHIFT    (XARRAY_INDEX_BITS - XARRAY_BITS)
+#else
+#define XARRAY_MAX_SHIFT    (XARRAY_INDEX_BITS - XARRAY_INDEX_BITS % XARRAY_BITS)
+#endif
 
 xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb)
 {
@@ -40,6 +44,7 @@ xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
 {
     xarray_block_t* parent = &array->root;
     xarray_block_t* child;
+    xarray_node_t* nwnd;
     int i;
 
     do
@@ -81,30 +86,29 @@ xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
     while (parent->shift > 0);
 
     i = index & XARRAY_MASK;
+    nwnd = parent->values[i];
 
-    xarray_node_t* node = parent->values[i];
-
-    if (!node)
+    if (!nwnd)
     {
 #ifndef XARRAY_NO_CACHE
         if (array->nod_cache)
         {
-            node = array->nod_cache;
-            array->nod_cache = (xarray_node_t*)node->block;
+            nwnd = array->nod_cache;
+            array->nod_cache = (xarray_node_t*)nwnd->block;
         }
         else
         {
 #endif
-            node = malloc(sizeof(xarray_node_t) + array->val_size);
-            if (!node)
+            nwnd = malloc(sizeof(xarray_node_t) + array->val_size);
+            if (!nwnd)
                 return NULL;
 #ifndef XARRAY_NO_CACHE
         }
 #endif
-        node->block = parent;
-        node->index = index;
+        nwnd->block = parent;
+        nwnd->index = index;
 
-        parent->values[i] = node;
+        parent->values[i] = nwnd;
 
         ++array->values;
         ++parent->used;
@@ -112,13 +116,13 @@ xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
     else if (array->destroy_cb)
     {
         /* index has already been set, destroy it */
-        array->destroy_cb(xarray_iter_value(node));
+        array->destroy_cb(xarray_iter_value(nwnd));
     }
 
     if (pvalue)
-        memcpy(xarray_iter_value(node), pvalue, array->val_size);
+        memcpy(xarray_iter_value(nwnd), pvalue, array->val_size);
 
-    return node;
+    return nwnd;
 }
 
 void xarray_unset(xarray_t* array, xuint index)

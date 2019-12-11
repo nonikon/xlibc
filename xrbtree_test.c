@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "xrbtree.h"
 
@@ -14,13 +15,13 @@ void on_destroy(void* pstr)
     printf("free [%s]\n", *(char**)pstr);
     free(*(char**)pstr);
 }
-void traverse(xrbtree_t* xs)
+void traverse(xrbtree_t* rb)
 {
-    xrbtree_iter_t iter = xrbtree_begin(xs);
+    xrbtree_iter_t iter = xrbtree_begin(rb);
     char** pstr;
 
-    printf("traverse size=%ld\n", xrbtree_size(xs));
-    while (iter != xrbtree_end(xs))
+    printf("traverse size=%ld\n", xrbtree_size(rb));
+    while (iter != xrbtree_end(rb))
     {
         pstr = xrbtree_iter_data(iter);
         printf(" [%s], ", *pstr);
@@ -30,47 +31,46 @@ void traverse(xrbtree_t* xs)
 }
 void test()
 {
-    xrbtree_t* xs = xrbtree_new(sizeof(char*), on_cmp, on_destroy);
+    xrbtree_t* rb = xrbtree_new(sizeof(char*), on_cmp, on_destroy);
     char* str;
 
     str = strdup("fweogew");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
     str = strdup("he543yh");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
     str = strdup("hb353uyh4j");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
     str = strdup("hb23gr26ty54u");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
     str = strdup("234235fsd");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
     str = strdup("u656i5kk");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
     str = strdup("yh35");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
     str = strdup("2");
-    xrbtree_insert(xs, &str);
+    xrbtree_insert(rb, &str);
 
-    traverse(xs);
+    traverse(rb);
 
     str = "u656i5kk";
-    char** pstr = xrbtree_find_ex(xs, &str);
+    char** pstr = xrbtree_find_ex(rb, &str);
     if (pstr != XRBTREE_INVALID)
     {
         printf("erase [%s]\n", *pstr);
-        xrbtree_erase_ex(xs, pstr);
-        traverse(xs);
+        xrbtree_erase_ex(rb, pstr);
+        traverse(rb);
     }
 
-    xrbtree_free(xs);
+    xrbtree_free(rb);
 }
 /*----------------------test----------------------*/
 
 /* +++++++++++++++++++++testspeed++++++++++++++++++++++  */
-#include <sys/time.h>
 
 int on_cmp2(void* l, void* r)
 {
-    return strcmp(l, r);
+    return *(int*)l - *(int*)r;
 }
 void traverse2(xrbtree_node_t* node, int depth, int acc[])
 {
@@ -80,76 +80,84 @@ void traverse2(xrbtree_node_t* node, int depth, int acc[])
     if (node->rb_right)
         traverse2(node->rb_right, depth + 1, acc);
 }
-void tree_overview(xrbtree_t* xs)
+void tree_overview(xrbtree_t* rb)
 {
     // printf the number of nodes in every depth of rbtree
     int acc[36] = { 0 };
-
-    printf("size = %ld\n", xrbtree_size(xs));
-    traverse2(xs->root, 0, acc);
-    printf("nodes[depth] = ");
+    printf("\tsize %ld, ", xrbtree_size(rb));
+    if (rb->root)
+        traverse2(rb->root, 0, acc);
+    printf("nodes[depth]: ");
     for (int depth = 0; acc[depth] > 0; ++depth)
         printf("%d ", acc[depth]);
-    printf("\n");
-
+    printf(".\n");
 }
-void test_speed()
+#define RAND_SEED 123456
+void test_speed(int nvalues)
 {
-    const char* char_table = "qwertyuiopasdfghjklzxcvbnm";
-#define STR_MAXLEN 16
-    xrbtree_t* xs = xrbtree_new(STR_MAXLEN, on_cmp2, NULL);
-    char str[STR_MAXLEN];
-    char str_to_find[100][STR_MAXLEN];
+    xrbtree_t* rb = xrbtree_new(sizeof(int), on_cmp2, NULL);
+    clock_t begin, end;
+    int value, count, i;
 
-    srand(31430);
-    // generate 100000 random strings and insert into 'xs'
-    // store 100 strings into 'str_to_find'
-    for (int i = 0; i < 100000; ++i)
+    srand(RAND_SEED);
+    // generate 'nvalues' random integer and insert into 'rb'
+    begin = clock();
+    for (i = 0; i < nvalues; ++i)
     {
-        for (int j = 0; j < STR_MAXLEN - 1; ++j)
+        value = rand();
+        if (!xrbtree_insert(rb, &value))
         {
-            str[j] = char_table[rand() % 26];
+            printf("out of memory when insert %d value\n", i);
+            break;
         }
-        str[STR_MAXLEN - 1] = '\0';
-        xrbtree_insert(xs, str);
-
-        if (i % 1000 == 0)
-            memcpy(str_to_find[i / 1000], str, 16);
     }
-#undef STR_MAXLEN
-    tree_overview(xs);
+    end = clock();
+    printf("insert %d random integer done, time %lfs\n",
+            nvalues, (double)(end - begin) / CLOCKS_PER_SEC);
 
-    struct timeval begin, end;
-    xrbtree_iter_t iter_to_erase[100];
+    tree_overview(rb);
 
+    // reset the same seed to get the same series number
+    srand(RAND_SEED);
     // search time test
-    gettimeofday(&begin, NULL);
-    for (int i = 0; i < 100; ++i)
+    begin = clock();
+    for (count = 0, i = 0; i < nvalues; ++i)
     {
-        iter_to_erase[i] = xrbtree_find(xs, str_to_find[i]);
-        if (!iter_to_erase[i])
-            printf("%s not found\n", str_to_find[i]);
+        value = rand();
+        if (xrbtree_find(rb, &value))
+            ++count;
     }
-    gettimeofday(&end, NULL);
-    printf("search 100 strings done, time %lds %ldus\n",
-                end.tv_sec - begin.tv_sec, end.tv_usec - begin.tv_usec);
+    end = clock();
+    printf("search %d random integer done, time %lfs, found %d\n",
+            nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
 
+    // reset the same seed to get the same series number
+    srand(RAND_SEED);
     // remove time test
-    gettimeofday(&begin, NULL);
-    for (int i = 0; i < 100; ++i)
-        xrbtree_erase(xs, iter_to_erase[i]);
-    gettimeofday(&end, NULL);
-    printf("erase 100 strings done, time %lds %ldus\n",
-                end.tv_sec - begin.tv_sec, end.tv_usec - begin.tv_usec);
-    tree_overview(xs);
+    begin = clock();
+    for (count = 0, i = 0; i < nvalues; ++i)
+    {
+        value = rand();
+        xrbtree_iter_t iter = xrbtree_find(rb, &value);
+        if (iter)
+            xrbtree_erase(rb, iter);
+        else
+            ++count;
+    }
+    end = clock();
+    printf("search and remove %d random integer done, time %lfs, %d not found!\n",
+            nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
 
-    xrbtree_free(xs);
+    tree_overview(rb);
+
+    getchar();
+    xrbtree_free(rb);
 }
 /*----------------------testspeed----------------------*/
 
 int main(int argc, char** argv)
 {
-    test();
-    // test_speed();
+    // test();
+    test_speed(5000000);
     return 0;
 }

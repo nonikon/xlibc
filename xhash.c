@@ -103,41 +103,53 @@ void xhash_free(xhash_t* xh)
 xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
 {
     unsigned hash = xh->hash_cb((void*)pdata);
-    xhash_iter_t* iter = &xh->buckets[hash & (xh->bkt_size - 1)];
-    xhash_node_t* prev = NULL;
+    xhash_iter_t iter = xh->buckets[hash & (xh->bkt_size - 1)];
+    xhash_iter_t prev = NULL;
 
-    while (*iter)
+    while (iter)
     {
-        if (hash == (*iter)->hash
-            && xh->equal_cb((void*)pdata, xhash_iter_data(*iter)))
+        if (hash == iter->hash
+            && xh->equal_cb((void*)pdata, xhash_iter_data(iter)))
         {
-            return *iter;
+            return iter;
         }
 
-        prev = *iter;
-        iter = &(*iter)->next;
+        prev = iter;
+        iter = iter->next;
     }
 
 #ifndef XHASH_NO_CACHE
     if (xh->cache)
     {
-        *iter = xh->cache;
-        xh->cache = (*iter)->next;
+        iter = xh->cache;
+        xh->cache = iter->next;
     }
     else
     {
 #endif
-        *iter = malloc(sizeof(xhash_node_t) + xh->data_size);
-        if (!*iter)
+        iter = malloc(sizeof(xhash_node_t) + xh->data_size);
+        if (!iter)
             return NULL;
 #ifndef XHASH_NO_CACHE
     }
 #endif
-    memcpy(xhash_iter_data(*iter), pdata, xh->data_size);
+    memcpy(xhash_iter_data(iter), pdata, xh->data_size);
 
-    (*iter)->prev = prev;
-    (*iter)->next = NULL;
-    (*iter)->hash = hash;
+    if (prev)
+    {
+        /* this bucket already has some node, append */
+        prev->next = iter;
+        iter->prev = prev;
+    }
+    else
+    {
+        /* this bucket has no node, assign */
+        xh->buckets[hash & (xh->bkt_size - 1)] = iter;
+        iter->prev = NULL;
+    }
+
+    iter->next = NULL;
+    iter->hash = hash;
 
     ++xh->size;
 
@@ -145,7 +157,7 @@ xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
     if (xh->size * 100 / xh->bkt_size > xh->loadfactor)
         buckets_expand(xh);
 
-    return *iter;
+    return iter;
 }
 
 xhash_iter_t xhash_get(xhash_t* xh, const void* pdata)

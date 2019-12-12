@@ -164,6 +164,10 @@ void xarray_unset(xarray_t* array, xuint index)
         while (!block->used)
         {
             i = block->parent_pos;
+
+            if (/* unlikely */!block->parent_block)
+                break; /* only if unset the last value */
+
             block = block->parent_block;
 
             /* destroy a block */

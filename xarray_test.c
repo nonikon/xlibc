@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>     // memset(), strerror()
 #include <stdlib.h>     // malloc()
+#include <time.h>       // clock()
 
 #include "xarray.h"
 
@@ -64,8 +65,85 @@ void test()
     xarray_free(array);
 }
 
+// random an integer
+static inline void rand_int(int* n)
+{
+    unsigned char* c = (unsigned char*)n;
+
+    c[0] = rand() & 0xff;
+    c[1] = rand() & 0xff;
+    c[2] = rand() & 0xff;
+    c[3] = rand() & 0xff;
+}
+#define RAND_SEED 123456
+void test1(int nvalues)
+{
+    xarray_t* arr = xarray_new(sizeof(unsigned), NULL);
+    clock_t begin, end;
+    int value, count, i;
+
+    srand(RAND_SEED);
+    // generate 'nvalues' random integer and put into 'arr'
+    begin = clock();
+    for (i = 0; i < nvalues; ++i)
+    {
+        // value = rand();
+        rand_int(&value);
+        if (!xarray_set(arr, value, NULL))
+        {
+            printf("out of memory, i = %d\n", i);
+            break;
+        }
+    }
+    end = clock();
+    printf("insert %d random integer done, time: %lf\n",
+            nvalues, ((double) (end - begin)) / CLOCKS_PER_SEC);
+    printf("\tblocks %ld, values %ld\n", arr->blocks, arr->values);
+    printf("\tblock memory %ldMB, node memory %ldMB\n",
+            sizeof(xarray_block_t) * arr->blocks / 1024 / 1024,
+            (sizeof(xarray_node_t) + arr->val_size) * arr->values / 1024 / 1024);
+
+    // reset the same seed to get the same series number
+    srand(RAND_SEED);
+    // search time test
+    begin = clock();
+    for (count = 0, i = 0; i < nvalues; ++i)
+    {
+        // value = rand();
+        rand_int(&value);
+        if (xarray_get(arr, value))
+            ++count;
+    }
+    end = clock();
+    printf("search %d random integer done, time %lfs, found %d\n",
+            nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
+
+    // reset the same seed to get the same series number
+    srand(RAND_SEED);
+    // remove time test
+    begin = clock();
+    for (count = 0, i = 0; i < nvalues; ++i)
+    {
+        // value = rand();
+        rand_int(&value);
+        xarray_iter_t iter = xarray_get(arr, value);
+        if (iter)
+            xarray_unset(arr, value);
+        else
+            ++count;
+    }
+    end = clock();
+    printf("search and remove %d random integer done, time %lfs, %d not found!\n",
+            nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
+    printf("\tblocks %ld, values %ld\n", arr->blocks, arr->values);
+
+    getchar();
+    xarray_free(arr);
+}
+
 int main(int argc, char** argv)
 {
-    test();
+    // test();
+    test1(5000000);
     return 0;
 }

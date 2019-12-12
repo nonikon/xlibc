@@ -67,10 +67,20 @@ void test()
 /*----------------------test----------------------*/
 
 /* +++++++++++++++++++++testspeed++++++++++++++++++++++  */
+// random an integer
+static inline void rand_int(int* n)
+{
+    unsigned char* c = (unsigned char*)n;
 
+    c[0] = rand() & 0xff;
+    c[1] = rand() & 0xff;
+    c[2] = rand() & 0xff;
+    c[3] = rand() & 0xff;
+}
 int on_cmp2(void* l, void* r)
 {
-    return *(int*)l - *(int*)r;
+    return *(int*)l > *(int*)r ? 1 :
+                (*(int*)l < *(int*)r ? -1 : 0);
 }
 void traverse2(xrbtree_node_t* node, int depth, int acc[])
 {
@@ -104,7 +114,8 @@ void test_speed(int nvalues)
     begin = clock();
     for (i = 0; i < nvalues; ++i)
     {
-        value = rand();
+        // value = rand();
+        rand_int(&value);
         if (!xrbtree_insert(rb, &value))
         {
             printf("out of memory when insert %d value\n", i);
@@ -123,7 +134,8 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        value = rand();
+        // value = rand();
+        rand_int(&value);
         if (xrbtree_find(rb, &value))
             ++count;
     }
@@ -137,7 +149,8 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        value = rand();
+        // value = rand();
+        rand_int(&value);
         xrbtree_iter_t iter = xrbtree_find(rb, &value);
         if (iter)
             xrbtree_erase(rb, iter);

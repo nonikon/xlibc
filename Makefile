@@ -1,7 +1,7 @@
 MAKE_VERSION = debug
 
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -std=c99
 LDFLAGS = -Wall
 
 ifeq ($(MAKE_VERSION), debug)

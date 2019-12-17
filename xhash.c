@@ -14,6 +14,9 @@ static int buckets_expand(xhash_t* xh)
 
     if (!new_bkts) return -1;
 
+    memset(&new_bkts[xh->bkt_size], 0,
+            sizeof(xhash_node_t*) * xh->bkt_size);
+
     /* rehash */
     for (i = 0; i < xh->bkt_size; ++i)
     {

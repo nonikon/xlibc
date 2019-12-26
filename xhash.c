@@ -112,7 +112,7 @@ xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
     while (iter)
     {
         if (hash == iter->hash
-            && xh->equal_cb((void*)pdata, xhash_iter_data(iter)))
+            && xh->equal_cb(xhash_iter_data(iter), (void*)pdata))
         {
             return iter;
         }
@@ -171,7 +171,7 @@ xhash_iter_t xhash_get(xhash_t* xh, const void* pdata)
     while (iter)
     {
         if (hash == iter->hash
-            && xh->equal_cb((void*)pdata, xhash_iter_data(iter)))
+            && xh->equal_cb(xhash_iter_data(iter), (void*)pdata))
         {
             return iter;
         }

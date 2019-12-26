@@ -528,7 +528,7 @@ xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata)
 
     while (*iter)
     {
-        result = tr->compare_cb((void*)pdata, xrbtree_iter_data(*iter));
+        result = tr->compare_cb(xrbtree_iter_data(*iter), (void*)pdata);
         parent = *iter;
 
         if (result > 0)
@@ -571,7 +571,7 @@ xrbtree_iter_t xrbtree_find(xrbtree_t* tr, const void* pdata)
 
     while (iter)
     {
-        result = tr->compare_cb((void*)pdata, xrbtree_iter_data(iter));
+        result = tr->compare_cb(xrbtree_iter_data(iter), (void*)pdata);
 
         if (result > 0)
             iter = iter->rb_right;

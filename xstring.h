@@ -79,7 +79,7 @@ void xstr_erase(xstr_t* xs, int pos, int count);
                         xstr_append_at(dest, pos, xstr_data(src), xstr_size(src))
 
 /* assign 'xstr' to a string. */
-#define xstr_assgin_str(dest, src) \
+#define xstr_assign_str(dest, src) \
                         xstr_assign(dest, xstr_data(src), xstr_size(src))
 
 extern const char g_xstr_i2c_table[];

@@ -83,7 +83,7 @@ void xstr_erase(xstr_t* xs, int pos, int count);
                         xstr_assign(dest, xstr_data(src), xstr_size(src))
 
 extern const char g_xstr_i2c_table[];
-extern const char g_xstr_c2i_table[];
+extern const unsigned char g_xstr_c2i_table[];
 
 /* unsigned int -> string, return a pointer pointed to 'buf'.
  * 'buf' size 36 may be the best.

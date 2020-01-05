@@ -171,7 +171,7 @@ char* uitoa(char* buf, unsigned int val, int radix)
     return buf;
 }
 
-const char g_xstr_c2i_table[] = {
+const unsigned char g_xstr_c2i_table[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /*0~15*/
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /*16~31*/
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /*32~47*/
@@ -193,13 +193,14 @@ const char g_xstr_c2i_table[] = {
 unsigned int atoui(const char* str, int base)
 {
     unsigned int acc = 0;
-    int v;
+    unsigned char v;
 
     while (*str)
     {
-        v = g_xstr_c2i_table[(unsigned char)*str++];
+        v = g_xstr_c2i_table
+                [(unsigned char)*str++];
 
-        if (v < 0 || v > base) break;
+        if (v > base) break;
 
         acc = acc * base + v;
     }

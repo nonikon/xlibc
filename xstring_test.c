@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "xstring.h"
 
@@ -25,10 +26,11 @@ void test1()
 {
     char buf[64];
 
-    uitoa(buf, 34253256, 16);
+    uitoa(buf, 34253256, 10);
     printf("[str] %s\n", buf);
 
-    printf("[num] %d\n", atoui(buf, 16));
+    strcat(buf, "16.,ewiuhfo");
+    printf("[num] %u\n", atoui(buf, 10));
 
     uctoa_hex(buf, 0xAB);
     buf[2] = '\0';

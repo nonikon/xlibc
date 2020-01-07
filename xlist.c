@@ -108,6 +108,7 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
 }
 
 #ifndef XLIST_NO_CACHE
+
 void xlist_cache_free(xlist_t* xl)
 {
     xlist_node_t* c = xl->cache;
@@ -119,7 +120,10 @@ void xlist_cache_free(xlist_t* xl)
         c = xl->cache;
     }
 }
-#endif
+
+#endif // XLIST_NO_CACHE
+
+#ifndef XLIST_NO_CUT
 
 void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
 {
@@ -161,3 +165,5 @@ void xlist_cut_free(xlist_t* xl, void* pvalue)
     free(xlist_value_iter(pvalue));
 #endif
 }
+
+#endif // XLIST_NO_CUT

@@ -8,8 +8,10 @@
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
  * cache. define 'XLIST_NO_CACHE' to disable it. */
-
 // #define XLIST_NO_CACHE
+
+/* disable xlist_cut_* interface. */
+// #define XLIST_NO_CUT
 
 typedef struct xlist       xlist_t;
 typedef struct xlist_node  xlist_node_t;
@@ -97,6 +99,8 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter);
  * return an iterator pointing to the inserted element. */
 xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue);
 
+#ifndef XLIST_NO_CUT
+
 /* cut the element at 'iter', 'iter' MUST be valid.
  * return a pointer pointed to the element value.
  * 'xlist_cut_free()' OR 'xlist_paste()' MUST be called for the return value. */
@@ -109,6 +113,8 @@ void xlist_cut_free(xlist_t* xl, void* pvalue);
  * return a iterator pointed to the 'pvalue'.
  * 'xl' element type MUST equal to the 'pvalue' type. */
 xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue);
+
+#endif // XLIST_NO_CUT
 
 /* clears the elements (no cache) in a 'xlist_t'. */
 void xlist_clear(xlist_t* xl);
@@ -125,6 +131,8 @@ void xlist_clear(xlist_t* xl);
 /* removes the last element. see 'xlist_erase'. */
 #define xlist_pop_back(xl)              xlist_erase(xl, xlist_rbegin(xl))
 
+#ifndef XLIST_NO_CUT
+
 /* cut the first element. see 'xlist_cut'. */
 #define xlist_cut_front(xl)             xlist_cut(xl, xlist_begin(xl))
 
@@ -136,5 +144,7 @@ void xlist_clear(xlist_t* xl);
 
 /* paste an element to the end. see 'xlist_paste'. */
 #define xlist_paste_back(xl, pvalue)    xlist_paste(xl, xlist_end(xl), pvalue)
+
+#endif // XLIST_NO_CUT
 
 #endif // _XLIST_H_

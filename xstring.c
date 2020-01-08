@@ -33,6 +33,13 @@ xstr_t* xstr_new(size_t capacity)
         r->size = 0;
         r->capacity = capacity > 0 ? capacity : XSTR_DEFAULT_CAPACITY;
         r->data = malloc(r->capacity * sizeof(xchar));
+
+        if (!r->data)
+        {
+            free(r);
+            return NULL;
+        }
+
         r->data[0] = (xchar)'\0';
     }
 
@@ -41,19 +48,17 @@ xstr_t* xstr_new(size_t capacity)
 
 xstr_t* xstr_new_with(const xchar* cstr, int size)
 {
-    xstr_t* r = malloc(sizeof(xstr_t));
+    xstr_t* r;
+
+    if (size < 0)
+        for (size = 0; cstr[size]; ++size) { }
+
+    r = xstr_new(size + 1);
 
     if (r)
     {
-        if (size < 0)
-            for (size = 0; cstr[size]; ++size) { }
-
-        r->size = size;
-        r->capacity = size + 1;
-        r->data = malloc(r->capacity * sizeof(xchar));
-        r->data[size] = (xchar)'\0';
-
         memcpy(r->data, cstr, size);
+        r->data[size] = (xchar)'\0';
     }
 
     return r;
@@ -124,21 +129,23 @@ xchar xstr_pop_back(xstr_t* xs)
 
 void xstr_erase(xstr_t* xs, int pos, int count)
 {
-    int endpos = pos + count;
+    int endpos;
 
-    if (pos > 0 && pos < xs->size)
+    if (pos < 0 || pos >= xs->size)
+        return; /* out of bound, ignore */
+    
+    endpos = pos + count;
+
+    if (count < 0 || endpos >= xs->size)
     {
-        if (count < 0 || endpos >= xs->size)
-        {
-            xs->size = pos;
-            xs->data[pos] = (xchar)'\0';
-        }
-        else
-        {
-            memmove(xs->data + pos, xs->data + endpos, xs->size - endpos);
-            xs->size -= count;
-            xs->data[xs->size] = (xchar)'\0';
-        }
+        xs->size = pos;
+        xs->data[pos] = (xchar)'\0';
+    }
+    else
+    {
+        memmove(xs->data + pos, xs->data + endpos, xs->size - endpos);
+        xs->size -= count;
+        xs->data[xs->size] = (xchar)'\0';
     }
 }
 

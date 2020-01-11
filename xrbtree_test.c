@@ -6,63 +6,84 @@
 #include "xrbtree.h"
 
 /* +++++++++++++++++++++test++++++++++++++++++++++  */
+
+typedef struct
+{
+    char key[36];
+    int value;
+    // ...
+} mystruct_t;
+
 int on_cmp(void* l, void* r)
 {
-    return strcmp(*(char**)l, *(char**)r);
+    return strcmp(((mystruct_t*)l)->key, ((mystruct_t*)r)->key);
 }
-void on_destroy(void* pstr)
+void traverse(xrbt_t* rb)
 {
-    printf("free [%s]\n", *(char**)pstr);
-    free(*(char**)pstr);
-}
-void traverse(xrbtree_t* rb)
-{
-    xrbtree_iter_t iter = xrbtree_begin(rb);
-    char** pstr;
+    xrbt_iter_t iter = xrbt_begin(rb);
+    mystruct_t* p;
 
-    printf("traverse size=%ld\n", xrbtree_size(rb));
-    while (iter != xrbtree_end(rb))
+    printf("traverse size = %ld\n", xrbt_size(rb));
+    while (iter != xrbt_end(rb))
     {
-        pstr = xrbtree_iter_data(iter);
-        printf(" [%s], ", *pstr);
-        iter = xrbtree_iter_next(iter);
+        p = xrbt_iter_data(iter);
+        printf("[%s, %d], ", p->key, p->value);
+        iter = xrbt_iter_next(iter);
     }
     printf("\n");
 }
 void test()
 {
-    xrbtree_t* rb = xrbtree_new(sizeof(char*), on_cmp, on_destroy);
-    char* str;
+    xrbt_t* rb = xrbt_new(sizeof(mystruct_t), on_cmp, NULL);
+    mystruct_t myst;
+    mystruct_t* p;
 
-    str = strdup("fweogew");
-    xrbtree_insert(rb, &str);
-    str = strdup("he543yh");
-    xrbtree_insert(rb, &str);
-    str = strdup("hb353uyh4j");
-    xrbtree_insert(rb, &str);
-    str = strdup("hb23gr26ty54u");
-    xrbtree_insert(rb, &str);
-    str = strdup("234235fsd");
-    xrbtree_insert(rb, &str);
-    str = strdup("u656i5kk");
-    xrbtree_insert(rb, &str);
-    str = strdup("yh35");
-    xrbtree_insert(rb, &str);
-    str = strdup("2");
-    xrbtree_insert(rb, &str);
+    strcpy(myst.key, "fweogew");
+    myst.value = 1;
+    xrbt_insert(rb, &myst);
+    strcpy(myst.key, "he543yh");
+    myst.value = 2;
+    xrbt_insert(rb, &myst);
+    strcpy(myst.key, "hb353uyh4j");
+    myst.value = 3;
+    xrbt_insert(rb, &myst);
+    strcpy(myst.key, "hb23gr26ty54u");
+    myst.value = 4;
+    xrbt_insert(rb, &myst);
+    strcpy(myst.key, "234235fsd");
+    myst.value = 5;
+    xrbt_insert(rb, &myst);
+    strcpy(myst.key, "u656i5kk");
+    myst.value = 6;
+    xrbt_insert(rb, &myst);
+    strcpy(myst.key, "yh35");
+    myst.value = 7;
+    xrbt_insert(rb, &myst);
+    strcpy(myst.key, "2");
+    myst.value = 8;
+    xrbt_insert(rb, &myst);
 
     traverse(rb);
 
-    str = "u656i5kk";
-    char** pstr = xrbtree_find_ex(rb, &str);
-    if (pstr != XRBTREE_INVALID)
+    strcpy(myst.key, "u656i5kk");
+    myst.value = 999;
+    // key already exist, 'xrbt_insert' will do nothing (value will not be modified!)
+    xrbt_insert(rb, &myst);
+
+    p = xrbt_find_ex(rb, &myst);
+    if (p != XRBT_INVALID)
     {
-        printf("erase [%s]\n", *pstr);
-        xrbtree_erase_ex(rb, pstr);
+        printf("found [%s, %d], erase\n", p->key, p->value);
+        xrbt_erase_ex(rb, p);
         traverse(rb);
     }
+    
+    // !!!!!
+    p = xrbt_find_ex(rb, "234235fsd");
+    if (p != XRBT_INVALID)
+        printf("found [%s, %d]!!!!\n", p->key, p->value);
 
-    xrbtree_free(rb);
+    xrbt_free(rb);
 }
 /*----------------------test----------------------*/
 
@@ -82,7 +103,7 @@ int on_cmp2(void* l, void* r)
     return *(int*)l > *(int*)r ? 1 :
                 (*(int*)l < *(int*)r ? -1 : 0);
 }
-void traverse2(xrbtree_node_t* node, int depth, int acc[])
+void traverse2(xrbt_node_t* node, int depth, int acc[])
 {
     ++acc[depth];
     if (node->rb_left)
@@ -90,11 +111,11 @@ void traverse2(xrbtree_node_t* node, int depth, int acc[])
     if (node->rb_right)
         traverse2(node->rb_right, depth + 1, acc);
 }
-void tree_overview(xrbtree_t* rb)
+void tree_overview(xrbt_t* rb)
 {
     // printf the number of nodes in every depth of rbtree
     int acc[36] = { 0 };
-    printf("\tsize %ld, ", xrbtree_size(rb));
+    printf("\tsize %ld, ", xrbt_size(rb));
     if (rb->root)
         traverse2(rb->root, 0, acc);
     printf("nodes[depth]: ");
@@ -105,7 +126,7 @@ void tree_overview(xrbtree_t* rb)
 #define RAND_SEED 123456
 void test_speed(int nvalues)
 {
-    xrbtree_t* rb = xrbtree_new(sizeof(int), on_cmp2, NULL);
+    xrbt_t* rb = xrbt_new(sizeof(int), on_cmp2, NULL);
     clock_t begin, end;
     int value, count, i;
 
@@ -116,7 +137,7 @@ void test_speed(int nvalues)
     {
         // value = rand();
         rand_int(&value);
-        if (!xrbtree_insert(rb, &value))
+        if (!xrbt_insert(rb, &value))
         {
             printf("out of memory when insert %d value\n", i);
             break;
@@ -136,7 +157,7 @@ void test_speed(int nvalues)
     {
         // value = rand();
         rand_int(&value);
-        if (xrbtree_find(rb, &value))
+        if (xrbt_find(rb, &value))
             ++count;
     }
     end = clock();
@@ -151,9 +172,9 @@ void test_speed(int nvalues)
     {
         // value = rand();
         rand_int(&value);
-        xrbtree_iter_t iter = xrbtree_find(rb, &value);
+        xrbt_iter_t iter = xrbt_find(rb, &value);
         if (iter)
-            xrbtree_erase(rb, iter);
+            xrbt_erase(rb, iter);
         else
             ++count;
     }
@@ -164,7 +185,7 @@ void test_speed(int nvalues)
     tree_overview(rb);
 
     getchar();
-    xrbtree_free(rb);
+    xrbt_free(rb);
 }
 /*----------------------testspeed----------------------*/
 

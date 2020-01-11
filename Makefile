@@ -11,8 +11,7 @@ CFLAGS += -O2
 endif
 
 TARGET = \
-	xlist_test xarray_test \
-	xrbtree_test xrbmap_test \
+	xlist_test xarray_test xrbtree_test \
 	xstring_test xhash_test
 
 all : $(TARGET)
@@ -24,9 +23,6 @@ xarray_test : xarray.o xarray_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 xrbtree_test : xrbtree.o xrbtree_test.o
-	@echo "\tLD $@"
-	@$(CC) -o $@ $^ $(LDFLAGS)
-xrbmap_test : xrbtree.o xrbmap_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 xstring_test : xstring.o xstring_test.o

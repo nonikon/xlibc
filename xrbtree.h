@@ -8,106 +8,93 @@
 
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
- * cache. define 'XRBTREE_NO_CACHE' to disable it. */
+ * cache. define 'XRBT_NO_CACHE' to disable it. */
 
-// #define XRBTREE_NO_CACHE
+// #define XRBT_NO_CACHE
 
-typedef struct xrbtree       xrbtree_t;
-typedef struct xrbtree_node  xrbtree_node_t;
-typedef struct xrbtree_node* xrbtree_iter_t;
+typedef struct xrbt         xrbt_t;
+typedef struct xrbt_node    xrbt_node_t;
+typedef struct xrbt_node*   xrbt_iter_t;
 
-typedef void (*xrbtree_destroy_cb)(void* pdata);
-typedef int  (*xrbtree_compare_cb)(void* l, void* r);
+typedef void (*xrbt_destroy_cb)(void* pdata);
+typedef int  (*xrbt_compare_cb)(void* l, void* r);
 
-struct xrbtree_node {
-    unsigned long        rb_parent_color; // parent and color
-    struct xrbtree_node* rb_right;
-    struct xrbtree_node* rb_left;
-    // each node have extra data which size is 'xrbtree_t.data_size'
+struct xrbt_node {
+    unsigned long       rb_parent_color; // parent and color
+    struct xrbt_node*   rb_right;
+    struct xrbt_node*   rb_left;
+    // each node have extra data which size is 'xrbt_t.data_size'
 };
 
-struct xrbtree {
-    xrbtree_compare_cb compare_cb;
-    xrbtree_destroy_cb destroy_cb;
-    size_t             data_size;
-    size_t             size;
-#ifndef XRBTREE_NO_CACHE
-    xrbtree_node_t*    cache;
+struct xrbt {
+    xrbt_compare_cb compare_cb;
+    xrbt_destroy_cb destroy_cb;
+    size_t          data_size;
+    size_t          size;
+#ifndef XRBT_NO_CACHE
+    xrbt_node_t*    cache;
 #endif
-    xrbtree_node_t*    root;
+    xrbt_node_t*    root;
 };
 
-/* allocate memory and initialize a 'xrbtree_t'.
+/* allocate memory and initialize a 'xrbt_t'.
  * 'compare_cb' is called when comparing two datas, can't be 'NULL'.
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
-xrbtree_t* xrbtree_new(size_t data_size, xrbtree_compare_cb compare_cb,
-                xrbtree_destroy_cb destroy_cb);
-
-/* release memory for a 'xrbtree_t'. */
-void xrbtree_free(xrbtree_t* tr);
+xrbt_t* xrbt_new(size_t data_size, xrbt_compare_cb compare_cb,
+                xrbt_destroy_cb destroy_cb);
+/* release memory for a 'xrbt_t'. */
+void xrbt_free(xrbt_t* tr);
 
 #ifndef XLIST_NO_CACHE
-/* free all cache nodes in a 'xrbtree_t'. */
-void xrbtree_cache_free(xrbtree_t* xl);
+/* free all cache nodes in a 'xrbt_t'. */
+void xrbt_cache_free(xrbt_t* tr);
 #endif
 
 /* return the number of elements. */
-#define xrbtree_size(tr)        ((tr)->size)
-
+#define xrbt_size(tr)       ((tr)->size)
 /* check whether the container is empty. */
-#define xrbtree_empty(tr)       ((tr)->size == 0)
-
+#define xrbt_empty(tr)      ((tr)->size == 0)
 /* return an iterator to the end. */
-#define xrbtree_end(xh)         NULL
-
+#define xrbt_end(xh)        NULL
 /* return a reverse iterator to the end.  */
-#define xrbtree_rend(xh)        NULL
+#define xrbt_rend(xh)       NULL
 
 /* return an iterator to the beginning. */
-xrbtree_iter_t xrbtree_begin(xrbtree_t* tr);
-
+xrbt_iter_t xrbt_begin(xrbt_t* tr);
 /* return the next iterator of 'iter'. */
-xrbtree_iter_t xrbtree_iter_next(xrbtree_iter_t iter);
-
+xrbt_iter_t xrbt_iter_next(xrbt_iter_t iter);
 /* return a reverse iterator to the beginning. */
-xrbtree_iter_t xrbtree_rbegin(xrbtree_t* tr);
-
+xrbt_iter_t xrbt_rbegin(xrbt_t* tr);
 /* return the next reverse iterator of 'iter'. */
-xrbtree_iter_t xrbtree_riter_next(xrbtree_iter_t iter);
+xrbt_iter_t xrbt_riter_next(xrbt_iter_t iter);
 
 /* check whether an iterator is valid. */
-#define xrbtree_iter_valid(iter)    ((iter) != NULL)
-
+#define xrbt_iter_valid(iter)   ((iter) != NULL)
 /* return a pointer pointed to the data of 'iter', 'iter' MUST be valid. */
-#define xrbtree_iter_data(iter)     ((void*)((iter) + 1))
-
+#define xrbt_iter_data(iter)    ((void*)((iter) + 1))
 /* return an iterator of an element data. */
-#define xrbtree_data_iter(pdata)    ((xrbtree_iter_t)(pdata) - 1)
+#define xrbt_data_iter(pdata)   ((xrbt_iter_t)(pdata) - 1)
 
 /* insert an element with specific data, return an iterator to
  * the inserted element, return 'NULL' when out of memory.
  * if the data is already exist, do nothing an return it's iterator. */
-xrbtree_iter_t xrbtree_insert(xrbtree_t* tr, const void* pdata);
-
+xrbt_iter_t xrbt_insert(xrbt_t* tr, const void* pdata);
 /* find an element with specific data. return an iterator to the element with specific data,
  * return 'NULL' if not found. */
-xrbtree_iter_t xrbtree_find(xrbtree_t* tr, const void* pdata);
-
+xrbt_iter_t xrbt_find(xrbt_t* tr, const void* pdata);
 /* remove an element at 'iter', 'iter' MUST be valid. */
-void xrbtree_erase(xrbtree_t* tr, xrbtree_iter_t iter);
-
+void xrbt_erase(xrbt_t* tr, xrbt_iter_t iter);
 /* remove all elements (no cache) in 'tr'. */
-void xrbtree_clear(xrbtree_t* tr);
+void xrbt_clear(xrbt_t* tr);
 
 /* find an element with specific data. return a pointer to the element
- * with specific data, return 'XRBTREE_INVALID' if not found.
- * the return value can call 'xrbtree_data_iter' to get it's iterator. */
-#define xrbtree_find_ex(tr, pdata)  xrbtree_iter_data(xrbtree_find(tr, pdata))
+ * with specific data, return 'XRBT_INVALID' if not found.
+ * the return value can call 'xrbt_data_iter' to get it's iterator. */
+#define xrbt_find_ex(tr, pdata)     xrbt_iter_data(xrbt_find(tr, pdata))
+/* remove an element, 'pdata' should be the return value of 'xrbt_find_ex'
+ * and not equal to 'XRBT_INVALID'. */
+#define xrbt_erase_ex(tr, pdata)    xrbt_erase(tr, xrbt_data_iter(pdata))
 
-/* remove an element, 'pdata' should be the return value of 'xrbtree_get_ex'
- * and not equal to 'XRBTREE_INVALID'. */
-#define xrbtree_erase_ex(xh, pdata) xrbtree_erase(xh, xrbtree_data_iter(pdata))
-
-#define XRBTREE_INVALID             xrbtree_iter_data((xrbtree_iter_t)0)
+#define XRBT_INVALID    xrbt_iter_data((xrbt_iter_t)0)
 
 #endif // _XRBTREE_H_

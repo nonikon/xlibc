@@ -19,35 +19,35 @@
 #define XHASH_DEFAULT_LOADFACTOR    75 // percent
 #endif
 
-typedef struct xhash       xhash_t;
-typedef struct xhash_node  xhash_node_t;
-typedef struct xhash_node* xhash_iter_t;
+typedef struct xhash        xhash_t;
+typedef struct xhash_node   xhash_node_t;
+typedef struct xhash_node*  xhash_iter_t;
 
-typedef void     (*xhash_destroy_cb)(void* pdata);
-typedef unsigned (*xhash_hash_cb)(void* pdata);
-typedef int      (*xhash_equal_cb)(void* l, void* r);
+typedef void        (*xhash_destroy_cb)(void* pdata);
+typedef unsigned    (*xhash_hash_cb)(void* pdata);
+typedef int         (*xhash_equal_cb)(void* l, void* r);
 
 struct xhash_node
 {
-    struct xhash_node* prev;
-    struct xhash_node* next;
-    unsigned           hash;
+    struct xhash_node*  prev;
+    struct xhash_node*  next;
+    unsigned            hash;
     // char data[0];
 };
 
 struct xhash
 {
-    xhash_hash_cb    hash_cb;
-    xhash_equal_cb   equal_cb;
-    xhash_destroy_cb destroy_cb;
-    size_t           bkt_size;    // buckets size
-    size_t           data_size;
-    size_t           size;        // element (node) count
-    size_t           loadfactor;
+    xhash_hash_cb       hash_cb;
+    xhash_equal_cb      equal_cb;
+    xhash_destroy_cb    destroy_cb;
+    size_t              bkt_size;   // buckets size
+    size_t              data_size;
+    size_t              size;       // element (node) count
+    size_t              loadfactor;
 #ifndef XHASH_NO_CACHE
-    xhash_node_t*    cache;       // cache nodes
+    xhash_node_t*       cache;      // cache nodes
 #endif
-    xhash_node_t**   buckets;
+    xhash_node_t**      buckets;
 };
 
 /* allocate memory and initialize a 'xhash_t'.
@@ -57,7 +57,6 @@ struct xhash
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
 xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
             xhash_equal_cb equal_cb, xhash_destroy_cb destroy_cb);
-
 /* release memory for a 'xhash_t'. */
 void xhash_free(xhash_t* xh);
 
@@ -69,29 +68,24 @@ void xhash_cache_free(xhash_t* xh);
 /* set loadfactor of 'xh', 'factor' is an interger which
  * standfor loadfactor percent. */
 #define xhash_set_loadfactor(xh, factor) \
-                                (xh)->loadfactor = factor
+                        (xh)->loadfactor = factor
 
 /* return the number of elements. */
-#define xhash_size(xh)          ((xh)->size)
-
+#define xhash_size(xh)  ((xh)->size)
 /* check whether the container is empty. */
-#define xhash_empty(xh)         ((xh)->size == 0)
-
+#define xhash_empty(xh) ((xh)->size == 0)
 /* return an iterator to the end. */
-#define xhash_end(xh)           NULL
+#define xhash_end(xh)   NULL
 
 /* return an iterator to the beginning. */
 xhash_iter_t xhash_begin(xhash_t* xh);
-
 /* return the next iterator of 'iter'. */
 xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter);
 
 /* check whether an iterator is valid. */
 #define xhash_iter_valid(iter)  ((iter) != NULL)
-
 /* return a pointer pointed to the data of 'iter', 'iter' MUST be valid. */
 #define xhash_iter_data(iter)   ((void*)((iter) + 1))
-
 /* return an iterator of an element data. */
 #define xhash_data_iter(pdata)  ((xhash_iter_t)(pdata) - 1)
 
@@ -99,28 +93,23 @@ xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter);
  * the inserted element, return 'NULL' when out of memory.
  * if the data is already exist, do nothing an return it's iterator. */
 xhash_iter_t xhash_put(xhash_t* xh, const void* pdata);
-
 /* find an element with specific data. return an iterator to
  * the element with specific data, return 'NULL' if not found. */
 xhash_iter_t xhash_get(xhash_t* xh, const void* pdata);
-
 /* remove an element at 'iter', 'iter' MUST be valid. */
 void xhash_remove(xhash_t* xh, xhash_iter_t iter);
-
 /* remove all elements (no cache) in 'xh'. */
 void xhash_clear(xhash_t* xh);
 
 /* find an element with specific data. return a pointer to the element
  * with specific data, return 'XHASH_INVALID' if not found.
  * the return value can call 'xhash_data_iter' to get it's iterator. */
-#define xhash_get_ex(xh, pdata) xhash_iter_data(xhash_get(xh, pdata))
-
+#define xhash_get_ex(xh, pdata)     xhash_iter_data(xhash_get(xh, pdata))
 /* remove an element, 'pdata' should be the return value of 'xhash_get_ex'
  * and not equal to 'XHASH_INVALID'. */
-#define xhash_remove_ex(xh, pdata) \
-                                xhash_remove(xh, xhash_data_iter(pdata))
+#define xhash_remove_ex(xh, pdata)  xhash_remove(xh, xhash_data_iter(pdata))
 
-#define XHASH_INVALID           xhash_iter_data((xhash_iter_t)0)
+#define XHASH_INVALID   xhash_iter_data((xhash_iter_t)0)
 
 /* Some helper hash function, can be used in 'xhash_hash_cb'. */
 
@@ -148,8 +137,7 @@ static inline unsigned xhash_string_hash(const char* s)
     }
     return h;
 }
-#endif
-
+#else
 /* Basic string hash function, from Python's str.__hash__(). */
 static inline unsigned xhash_string_hash(const char *s)
 {
@@ -161,5 +149,6 @@ static inline unsigned xhash_string_hash(const char *s)
     h ^= (unsigned)(cp - (const unsigned char *)s);
     return h;
 }
+#endif
 
 #endif // _XHASH_H_

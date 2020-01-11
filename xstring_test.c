@@ -7,17 +7,37 @@ void test()
 {
     xstr_t* xs = xstr_new(8);
 
-    xstr_append(xs, "abcdefg", -1);
-    xstr_append(xs, "hijklmn", -1);
-    xstr_push_back(xs, 'o');
-    printf("[%ld] %s\n", xstr_size(xs), xstr_data(xs));
+    xstr_append(xs, "01234abcdefg", -1);
+    printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs),
+            xstr_data(xs));
+
+    xstr_append_at(xs, 1, "aaaaaa", -1);
+    printf("append_at_1_x\n");
+    printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
+
+    xstr_insert(xs, 3, "iiiiiii", -1);
+    printf("insert_3_x\n");
+    printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
 
     xstr_erase(xs, 5, 2);
-    printf("[%ld] %s\n", xstr_size(xs), xstr_data(xs));
+    printf("erase_5_2\n");
+    printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
+
+    xstr_push_back(xs, 'o');
+    printf("push_back\n");
+    printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
 
     xstr_assign(xs, "gwheoihfvnwebqo9083u", -1);
-    xstr_pop_back(xs);
-    printf("[%ld] %s\n", xstr_size(xs), xstr_data(xs));
+    printf("assign_x\n");
+    printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
+
+    xstr_prepend(xs, "==========================", -1);
+    printf("prepend_x\n");
+    printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
+
+    xstr_t* xs1 = xstr_new_with_str(xs);
+    printf("[%ld/%ld] %s\n", xstr_size(xs1), xstr_capacity(xs1), xstr_data(xs1));
+    xstr_free(xs1);
 
     xstr_free(xs);
 }

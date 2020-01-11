@@ -15,11 +15,11 @@ static int capacity_expand(xstr_t* xs, size_t size)
 
     if (new_cap < size) new_cap = size;
 
-    new_data = realloc(xs->data, new_cap * sizeof(xchar));
+    new_data = realloc(xs->data, new_cap);
 
     if (!new_data) return -1;
-    
-    xs->data = (xchar*)new_data;
+
+    xs->data = new_data;
     xs->capacity = new_cap;
     return 0;
 }
@@ -32,7 +32,7 @@ xstr_t* xstr_new(size_t capacity)
     {
         r->size = 0;
         r->capacity = capacity > 0 ? capacity : XSTR_DEFAULT_CAPACITY;
-        r->data = malloc(r->capacity * sizeof(xchar));
+        r->data = malloc(r->capacity);
 
         if (!r->data)
         {
@@ -40,13 +40,13 @@ xstr_t* xstr_new(size_t capacity)
             return NULL;
         }
 
-        r->data[0] = (xchar)'\0';
+        r->data[0] = '\0';
     }
 
     return r;
 }
 
-xstr_t* xstr_new_with(const xchar* cstr, int size)
+xstr_t* xstr_new_with(const char* cstr, int size)
 {
     xstr_t* r;
 
@@ -58,7 +58,8 @@ xstr_t* xstr_new_with(const xchar* cstr, int size)
     if (r)
     {
         memcpy(r->data, cstr, size);
-        r->data[size] = (xchar)'\0';
+        r->data[size] = '\0';
+        r->size = size;
     }
 
     return r;
@@ -76,10 +77,10 @@ void xstr_free(xstr_t* xs)
 void xstr_clear(xstr_t* xs)
 {
     xs->size = 0;
-    xs->data[0] = (xchar)'\0';
+    xs->data[0] = '\0';
 }
 
-void xstr_append(xstr_t* xs, const xchar* cstr, int size)
+void xstr_append(xstr_t* xs, const char* cstr, int size)
 {
     if (size < 0)
         for (size = 0; cstr[size]; ++size) { }
@@ -88,65 +89,66 @@ void xstr_append(xstr_t* xs, const xchar* cstr, int size)
         && capacity_expand(xs, size) != 0)
         return; /* ignore expand failed */
 
-    memcpy(xs->data + xs->size, cstr, size * sizeof(xchar));
+    memcpy(xs->data + xs->size, cstr, size);
 
     xs->size += size;
-    xs->data[xs->size] = (xchar)'\0';
+    xs->data[xs->size] = '\0';
 }
 
-void xstr_append_at(xstr_t* xs, int pos, const xchar* cstr, int size)
+void xstr_append_at(xstr_t* xs, size_t pos, const char* cstr, int size)
 {
-    if (pos > xs->size) pos = xs->size;
-    else if (pos < 0) pos = 0;
-
     xs->size = pos;
     xstr_append(xs, cstr, size);
 }
 
-void xstr_assign(xstr_t* xs, const xchar* cstr, int size)
+void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
 {
-    xs->size = 0;
-    xstr_append(xs, cstr, size);
+    if (size < 0)
+        for (size = 0; cstr[size]; ++size) { }
+
+    if (need_expand(xs, size)
+        && capacity_expand(xs, size) != 0)
+        return; /* ignore expand failed */
+
+    /* no boundary check */
+    memmove(xs->data + pos + size, xs->data + pos,
+                xs->size - pos); /* >>> */
+    memcpy(xs->data + pos, cstr, size);
+
+    xs->size += size;
+    xs->data[xs->size] = '\0';
 }
 
-void xstr_push_back(xstr_t* xs, xchar ch)
+void xstr_erase(xstr_t* xs, size_t pos, int count)
+{
+    /* no boundary check */
+    if (count < 0)
+    {
+        xs->size = pos;
+        xs->data[pos] = '\0';
+    }
+    else
+    {
+        memmove(xs->data + pos, xs->data + pos + count,
+                    xs->size - pos - count); /* <<< */
+        xs->size -= count;
+        xs->data[xs->size] = '\0';
+    }
+}
+
+void xstr_push_back(xstr_t* xs, char ch)
 {
     if(need_expand(xs, 1)
         && capacity_expand(xs, 1) != 0)
         return; /* ignore expand failed */
 
     xs->data[xs->size++] = ch;
-    xs->data[xs->size] = (xchar)'\0';
+    xs->data[xs->size] = '\0';
 }
 
-xchar xstr_pop_back(xstr_t* xs)
+void xstr_pop_back(xstr_t* xs)
 {
-    xchar c = xs->data[--xs->size];
-
-    xs->data[xs->size] = (xchar)'\0';
-    return c;
-}
-
-void xstr_erase(xstr_t* xs, int pos, int count)
-{
-    int endpos;
-
-    if (pos < 0 || pos >= xs->size)
-        return; /* out of bound, ignore */
-    
-    endpos = pos + count;
-
-    if (count < 0 || endpos >= xs->size)
-    {
-        xs->size = pos;
-        xs->data[pos] = (xchar)'\0';
-    }
-    else
-    {
-        memmove(xs->data + pos, xs->data + endpos, xs->size - endpos);
-        xs->size -= count;
-        xs->data[xs->size] = (xchar)'\0';
-    }
+    xs->data[--xs->size] = '\0';
 }
 
 const char g_xstr_i2c_table[] = {

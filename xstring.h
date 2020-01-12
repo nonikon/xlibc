@@ -43,16 +43,16 @@ void xstr_free(xstr_t* xs);
 /* return the number of characters that can be held in currently allocated storage.  */
 #define xstr_capacity(xs)   ((xs)->capacity)
 
+/* assign characters to a string at 'pos'. 'pos' must <= 'xs->size'. */
+void xstr_assign_at(xstr_t* xs, size_t pos, const char* cstr, int size);
+/* insert characters at 'pos'. 'pos' must <= 'xs->size'.
+ * 'size' < 0 means auto calculate. */
+void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size);
+/* remove 'count' characters starting at 'pos'. 'pos' must <= 'xs->size'.
+ * 'count' < 0 means end of 'xs'. */
+void xstr_erase(xstr_t* xs, size_t pos, int count);
 /* clear the contents. */
 void xstr_clear(xstr_t* xs);
-/* append characters to the end. 'size' < 0 means auto calculate. */
-void xstr_append(xstr_t* xs, const char* cstr, int size);
-/* append characters starting at 'pos'. 'size' < 0 means auto calculate. */
-void xstr_append_at(xstr_t* xs, size_t pos, const char* cstr, int size);
-/* insert characters at 'pos'. 'size' < 0 means auto calculate. */
-void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size);
-/* remove 'count' characters starting at 'pos', 'count' < 0 means end of 'xs'. */
-void xstr_erase(xstr_t* xs, size_t pos, int count);
 
 /* append a character to the end. */
 void xstr_push_back(xstr_t* xs, char ch);
@@ -60,24 +60,27 @@ void xstr_push_back(xstr_t* xs, char ch);
 void xstr_pop_back(xstr_t* xs);
 
 /* assign characters to a string. */
-#define xstr_assign(xs, cstr, size) \
-            xstr_append_at(xs, 0, cstr, size)
+#define xstr_assign(xs, cstr, sz) \
+            xstr_assign_at(xs, 0, cstr, sz)
+/* append characters to the end. 'sz' < 0 means auto calculate. */
+#define xstr_append(xs, cstr, sz) \
+            xstr_insert(xs, (xs)->size, cstr, sz)
 /* prepend characters to the begin. */
-#define xstr_prepend(xs, cstr, size) \
-            xstr_insert(xs, 0, cstr, size)
-/* assign 'xstr' to a string. */
-#define xstr_assign_str(dest, src) \
-            xstr_assign(dest, xstr_data(src), xstr_size(src))
-/* prepend 'xstr' to the begin. */
-#define xstr_prepend_str(dest, src) \
-            xstr_prepend(dest, xstr_data(src), xstr_size(src))
+#define xstr_prepend(xs, cstr, sz) \
+            xstr_insert(xs, 0, cstr, sz)
 /* append a 'xstr' to the end. */
 #define xstr_append_str(dest, src) \
             xstr_append(dest, xstr_data(src), xstr_size(src))
-/* append a 'xstr' starting at 'pos'. */
-#define xstr_append_str_at(dest, pos, src) \
-            xstr_append_at(dest, pos, xstr_data(src), xstr_size(src))
-/* insert a 'xstr' at 'pos'. */
+/* prepend 'xstr' to the begin. */
+#define xstr_prepend_str(dest, src) \
+            xstr_prepend(dest, xstr_data(src), xstr_size(src))
+/* assign 'xstr' to a string. */
+#define xstr_assign_str(dest, src) \
+            xstr_assign(dest, xstr_data(src), xstr_size(src))
+/* assign 'xstr' to a string at 'pos'. */
+#define xstr_assign_str_at(dest, pos, src) \
+            xstr_assign_at(dest, pos, xstr_data(src), xstr_size(src))
+/* insert 'xstr' at 'pos'. */
 #define xstr_insert_str(dest, pos, src) \
             xstr_insert(dest, pos, xstr_data(src), xstr_size(src))
 

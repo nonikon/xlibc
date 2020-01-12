@@ -11,8 +11,8 @@ void test()
     printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs),
             xstr_data(xs));
 
-    xstr_append_at(xs, 1, "aaaaaa", -1);
-    printf("append_at_1_x\n");
+    xstr_assign_at(xs, 1, "aaaaaa", -1);
+    printf("assign_at_1_x\n");
     printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
 
     xstr_insert(xs, 3, "iiiiiii", -1);
@@ -36,6 +36,12 @@ void test()
     printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
 
     xstr_t* xs1 = xstr_new_with_str(xs);
+    printf("new_with_str\n");
+    printf("[%ld/%ld] %s\n", xstr_size(xs1), xstr_capacity(xs1), xstr_data(xs1));
+    xstr_erase(xs, 0, 8);
+    xstr_pop_back(xs);
+    xstr_prepend_str(xs1, xs);
+    printf("prepend_str\n");
     printf("[%ld/%ld] %s\n", xstr_size(xs1), xstr_capacity(xs1), xstr_data(xs1));
     xstr_free(xs1);
 

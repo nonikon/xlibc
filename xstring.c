@@ -4,7 +4,7 @@
 #include "xstring.h"
 
 #define need_expand(xs, sz) \
-                (xs)->size + sz + 1 > (xs)->capacity /* leave 1 null-terminated */
+            (xs)->size + sz + 1 > (xs)->capacity /* leave 1 null-terminated */
 
 static int capacity_expand(xstr_t* xs, size_t size)
 {
@@ -17,11 +17,14 @@ static int capacity_expand(xstr_t* xs, size_t size)
 
     new_data = realloc(xs->data, new_cap);
 
-    if (!new_data) return -1;
+    if (new_data)
+    {
+        xs->data = new_data;
+        xs->capacity = new_cap;
+        return 0;
+    }
 
-    xs->data = new_data;
-    xs->capacity = new_cap;
-    return 0;
+    return -1;
 }
 
 xstr_t* xstr_new(size_t capacity)
@@ -34,16 +37,17 @@ xstr_t* xstr_new(size_t capacity)
         r->capacity = capacity > 0 ? capacity : XSTR_DEFAULT_CAPACITY;
         r->data = malloc(r->capacity);
 
-        if (!r->data)
+        if (r->data)
         {
-            free(r);
-            return NULL;
+            r->data[0] = '\0';
+            return r;
         }
 
-        r->data[0] = '\0';
+        free(r);
+        return NULL;
     }
 
-    return r;
+    return NULL;
 }
 
 xstr_t* xstr_new_with(const char* cstr, int size)
@@ -80,25 +84,10 @@ void xstr_clear(xstr_t* xs)
     xs->data[0] = '\0';
 }
 
-void xstr_append(xstr_t* xs, const char* cstr, int size)
-{
-    if (size < 0)
-        for (size = 0; cstr[size]; ++size) { }
-
-    if (need_expand(xs, size)
-        && capacity_expand(xs, size) != 0)
-        return; /* ignore expand failed */
-
-    memcpy(xs->data + xs->size, cstr, size);
-
-    xs->size += size;
-    xs->data[xs->size] = '\0';
-}
-
-void xstr_append_at(xstr_t* xs, size_t pos, const char* cstr, int size)
+void xstr_assign_at(xstr_t* xs, size_t pos, const char* cstr, int size)
 {
     xs->size = pos;
-    xstr_append(xs, cstr, size);
+    xstr_insert(xs, pos, cstr, size);
 }
 
 void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
@@ -106,12 +95,11 @@ void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
     if (size < 0)
         for (size = 0; cstr[size]; ++size) { }
 
-    if (need_expand(xs, size)
-        && capacity_expand(xs, size) != 0)
-        return; /* ignore expand failed */
+    if (need_expand(xs, size))
+        capacity_expand(xs, size); /* ignore expand failed */
 
-    /* no boundary check */
-    memmove(xs->data + pos + size, xs->data + pos,
+    if (pos < xs->size)
+        memmove(xs->data + pos + size, xs->data + pos,
                 xs->size - pos); /* >>> */
     memcpy(xs->data + pos, cstr, size);
 
@@ -121,26 +109,22 @@ void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
 
 void xstr_erase(xstr_t* xs, size_t pos, int count)
 {
-    /* no boundary check */
-    if (count < 0)
-    {
+    if (count < 0 || pos + count >= xs->size)
         xs->size = pos;
-        xs->data[pos] = '\0';
-    }
     else
     {
         memmove(xs->data + pos, xs->data + pos + count,
-                    xs->size - pos - count); /* <<< */
+                xs->size - pos - count); /* <<< */
         xs->size -= count;
-        xs->data[xs->size] = '\0';
     }
+
+    xs->data[xs->size] = '\0';
 }
 
 void xstr_push_back(xstr_t* xs, char ch)
 {
-    if(need_expand(xs, 1)
-        && capacity_expand(xs, 1) != 0)
-        return; /* ignore expand failed */
+    if(need_expand(xs, 1))
+        capacity_expand(xs, 1); /* ignore expand failed */
 
     xs->data[xs->size++] = ch;
     xs->data[xs->size] = '\0';

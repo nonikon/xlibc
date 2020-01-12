@@ -78,16 +78,17 @@ xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
 #endif
         xh->buckets = malloc(sizeof(xhash_node_t*) * xh->bkt_size);
 
-        if (!xh->buckets)
+        if (xh->buckets)
         {
-            free(xh);
-            return NULL;
+            memset(xh->buckets, 0, sizeof(xhash_node_t*) * xh->bkt_size);
+            return xh;
         }
 
-        memset(xh->buckets, 0, sizeof(xhash_node_t*) * xh->bkt_size);
+        free(xh);
+        return NULL;
     }
 
-    return xh;
+    return NULL;
 }
 
 void xhash_free(xhash_t* xh)

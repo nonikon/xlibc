@@ -44,11 +44,12 @@ void xvec_free(xvec_t* xv);
 /* access the last value. */
 #define xvec_back(xv)       xvec_at(xv, (xv)->size - 1)
 
-/* append 'count' values to the end. */
+/* append 'count' values to the end. if 'pvalues' is NULL, leave it uninitialized. */
 void xvec_append(xvec_t* xv, const void* pvalues, size_t count);
-/* insert 'count' values to at 'pos'. */
+/* insert 'count' values to at 'pos'.
+ * if 'pvalues' is NULL, leave it uninitialized. 'pos' must <= 'xv->size'. */
 void xvec_insert(xvec_t* xv, size_t pos, const void* pvalues, size_t count);
-/* remove 'count' values to at 'pos'. */
+/* remove 'count' values to at 'pos'. 'pos' must <= 'xv->size'. */
 void xvec_erase(xvec_t* xv, size_t pos, int count);
 /* remove all values. */
 void xvec_clear(xvec_t* xv);

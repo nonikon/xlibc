@@ -68,8 +68,8 @@ void xvec_append(xvec_t* xv, const void* pvalues, size_t count)
         capacity_expand(xv, count);
 
     if (pvalues)
-        memcpy(xvec_at(xv, xv->size),
-                pvalues, xv->val_size * count);
+        memcpy(xvec_at(xv, xv->size), pvalues,
+                xv->val_size * count);
 
     xv->size += count;
 }
@@ -81,13 +81,12 @@ void xvec_insert(xvec_t* xv,
         capacity_expand(xv, count);
 
     /* >>> */
-    memmove(xvec_at(xv, pos + count),
-            xvec_at(xv, pos),
+    memmove(xvec_at(xv, pos + count), xvec_at(xv, pos),
             xv->val_size * (xv->size - pos));
 
     if (pvalues)
-        memcpy(xvec_at(xv, pos),
-                pvalues, xv->val_size * count);
+        memcpy(xvec_at(xv, pos), pvalues,
+                xv->val_size * count);
 
     xv->size += count;
 }
@@ -114,6 +113,8 @@ void xvec_erase(xvec_t* xv, size_t pos, int count)
     }
     else
     {
+        xv->size -= count;
+
         if (xv->destroy_cb)
         {
             v = xvec_at(xv, pos);
@@ -124,11 +125,13 @@ void xvec_erase(xvec_t* xv, size_t pos, int count)
                 v += xv->val_size;
             }
         }
+        else
+        {
+            v = xvec_at(xv, pos + count);
+        }
 
-        xv->size -= count;
         /* <<< */
-        memmove(xvec_at(xv, pos),
-                xvec_at(xv, pos + count),
+        memmove(xvec_at(xv, pos), v,
                 xv->val_size * (xv->size - pos));
     }
 }
@@ -148,17 +151,18 @@ void xvec_pop_front(xvec_t* xv)
 
     --xv->size;
     /* <<< */
-    memmove(xvec_at(xv, 0),
-            xvec_at(xv, 1),
+    memmove(xvec_at(xv, 0), xvec_at(xv, 1),
             xv->val_size * xv->size);
 }
 
 void xvec_clear(xvec_t* xv)
 {
-    unsigned char* v = xv->data;
+    unsigned char* v;
 
     if (xv->destroy_cb)
     {
+        v = xv->data;
+
         while (xv->size-- > 0)
         {
             xv->destroy_cb((void*)v);

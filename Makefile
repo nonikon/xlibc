@@ -12,7 +12,7 @@ endif
 
 TARGET = \
 	xlist_test xarray_test xrbtree_test \
-	xstring_test xhash_test
+	xstring_test xhash_test xvector_test
 
 all : $(TARGET)
 
@@ -29,6 +29,9 @@ xstring_test : xstring.o xstring_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 xhash_test : xhash.o xhash_test.o
+	@echo "\tLD $@"
+	@$(CC) -o $@ $^ $(LDFLAGS)
+xvector_test : xvector.o xvector_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 

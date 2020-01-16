@@ -52,8 +52,8 @@ void xlist_clear(xlist_t* xl)
     xl->head.next = iter;
 }
 
-xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter,
-            const void* pvalue)
+xlist_iter_t xlist_insert(xlist_t* xl,
+        xlist_iter_t iter, const void* pvalue)
 {
     xlist_iter_t newi;
 
@@ -135,7 +135,8 @@ void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
     return xlist_iter_value(iter);
 }
 
-xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue)
+xlist_iter_t xlist_paste(xlist_t* xl,
+        xlist_iter_t iter, void* pvalue)
 {
     xlist_iter_t newi = xlist_value_iter(pvalue);
 

@@ -21,9 +21,9 @@ typedef void (*xlist_destroy_cb)(void* pvalue);
 
 struct xlist_node
 {
-    struct xlist_node* prev;
-    struct xlist_node* next;
-    // char value[0];
+    struct xlist_node*  prev;
+    struct xlist_node*  next;
+    // value
 };
 
 struct xlist

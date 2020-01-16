@@ -5,9 +5,10 @@
 
 void test()
 {
-    xstr_t* xs = xstr_new(8);
+    xstr_t* xs = xstr_new(-1);
 
     xstr_append(xs, "01234abcdefg", -1);
+    xstr_append(xs, "garghwerh4w3y3twyhgwe56u34;'n", -1);
     printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs),
             xstr_data(xs));
 
@@ -15,7 +16,7 @@ void test()
     printf("assign_at_1_x\n");
     printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
 
-    xstr_insert(xs, 3, "iiiiiii", -1);
+    xstr_insert(xs, 3, "qwerty", -1);
     printf("insert_3_x\n");
     printf("[%ld/%ld] %s\n", xstr_size(xs), xstr_capacity(xs), xstr_data(xs));
 

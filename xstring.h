@@ -6,7 +6,7 @@
 /* similar to C++ std::string libray. */
 
 #ifndef XSTR_DEFAULT_CAPACITY
-#define XSTR_DEFAULT_CAPACITY    36
+#define XSTR_DEFAULT_CAPACITY    32
 #endif
 
 typedef struct xstr xstr_t;
@@ -18,8 +18,9 @@ struct xstr
     size_t  capacity;
 };
 
-/* allocate memory for a string with initial capacity. */
-xstr_t* xstr_new(size_t capacity);
+/* allocate memory for a string with initial capacity.
+ * 'capacity' <= 0 means default. */
+xstr_t* xstr_new(int capacity);
 /* allocate memory for a string and initialize with 'cstr'.
  * 'size' < 0 means auto calculate. */
 xstr_t* xstr_new_with(const char* cstr, int size);
@@ -40,11 +41,13 @@ void xstr_free(xstr_t* xs);
 #define xstr_empty(xs)      ((xs)->size == 0)
 /* return the number of characters. */
 #define xstr_size(xs)       ((xs)->size)
-/* return the number of characters that can be held in currently allocated storage.  */
+/* return the number of characters that can be held in currently allocated storage. */
 #define xstr_capacity(xs)   ((xs)->capacity)
 
-/* assign characters to a string at 'pos'. 'pos' must <= 'xs->size'. */
+/* assign characters to a string beginning at 'pos'. 'pos' must <= 'xs->size'. */
 void xstr_assign_at(xstr_t* xs, size_t pos, const char* cstr, int size);
+/* append characters to the end. 'size' < 0 means auto calculate. */
+void xstr_append(xstr_t* xs, const char* cstr, int size);
 /* insert characters at 'pos'. 'pos' must <= 'xs->size'.
  * 'size' < 0 means auto calculate. */
 void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size);
@@ -54,20 +57,16 @@ void xstr_erase(xstr_t* xs, size_t pos, int count);
 /* clear the contents. */
 void xstr_clear(xstr_t* xs);
 
+/* assign characters to a string. */
+#define xstr_assign(xs, cstr, sz)   xstr_assign_at(xs, 0, cstr, sz)
+/* prepend characters to the begin. */
+#define xstr_prepend(xs, cstr, sz)  xstr_insert(xs, 0, cstr, sz)
+
 /* append a character to the end. */
 void xstr_push_back(xstr_t* xs, char ch);
 /* remove the last character. 'xs->size' must > 0. */
 void xstr_pop_back(xstr_t* xs);
 
-/* assign characters to a string. */
-#define xstr_assign(xs, cstr, sz) \
-            xstr_assign_at(xs, 0, cstr, sz)
-/* append characters to the end. 'sz' < 0 means auto calculate. */
-#define xstr_append(xs, cstr, sz) \
-            xstr_insert(xs, (xs)->size, cstr, sz)
-/* prepend characters to the begin. */
-#define xstr_prepend(xs, cstr, sz) \
-            xstr_insert(xs, 0, cstr, sz)
 /* append a 'xstr' to the end. */
 #define xstr_append_str(dest, src) \
             xstr_append(dest, xstr_data(src), xstr_size(src))

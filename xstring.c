@@ -27,18 +27,19 @@ static int capacity_expand(xstr_t* xs, size_t size)
     return -1;
 }
 
-xstr_t* xstr_new(size_t capacity)
+xstr_t* xstr_new(int capacity)
 {
     xstr_t* r = malloc(sizeof(xstr_t));
 
     if (r)
     {
-        r->size = 0;
-        r->capacity = capacity > 0 ? capacity : XSTR_DEFAULT_CAPACITY;
+        r->capacity = capacity > 0
+                ? capacity : XSTR_DEFAULT_CAPACITY;
         r->data = malloc(r->capacity);
 
         if (r->data)
         {
+            r->size = 0;
             r->data[0] = '\0';
             return r;
         }
@@ -57,16 +58,27 @@ xstr_t* xstr_new_with(const char* cstr, int size)
     if (size < 0)
         for (size = 0; cstr[size]; ++size) { }
 
-    r = xstr_new(size + 1);
+    r = malloc(sizeof(xstr_t));
 
     if (r)
     {
-        memcpy(r->data, cstr, size);
-        r->data[size] = '\0';
-        r->size = size;
+        r->data = malloc(size + 1);
+
+        if (r->data)
+        {
+            memcpy(r->data, cstr, size);
+
+            r->size = size;
+            r->capacity = size + 1;
+            r->data[size] = '\0';
+            return r;
+        }
+
+        free(r);
+        return NULL;
     }
 
-    return r;
+    return NULL;
 }
 
 void xstr_free(xstr_t* xs)
@@ -87,7 +99,21 @@ void xstr_clear(xstr_t* xs)
 void xstr_assign_at(xstr_t* xs, size_t pos, const char* cstr, int size)
 {
     xs->size = pos;
-    xstr_insert(xs, pos, cstr, size);
+    xstr_append(xs, cstr, size);
+}
+
+void xstr_append(xstr_t* xs, const char* cstr, int size)
+{
+    if (size < 0)
+        for (size = 0; cstr[size]; ++size) { }
+
+    if (need_expand(xs, size))
+        capacity_expand(xs, size); /* ignore expand failed */
+
+    memcpy(xs->data + xs->size, cstr, size);
+
+    xs->size += size;
+    xs->data[xs->size] = '\0';
 }
 
 void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
@@ -98,9 +124,10 @@ void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
     if (need_expand(xs, size))
         capacity_expand(xs, size); /* ignore expand failed */
 
-    if (pos < xs->size)
-        memmove(xs->data + pos + size, xs->data + pos,
-                xs->size - pos); /* >>> */
+    /* >>> */
+    memmove(xs->data + pos + size,
+            xs->data + pos, xs->size - pos);
+
     memcpy(xs->data + pos, cstr, size);
 
     xs->size += size;
@@ -110,15 +137,18 @@ void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
 void xstr_erase(xstr_t* xs, size_t pos, int count)
 {
     if (count < 0 || pos + count >= xs->size)
+    {
         xs->size = pos;
+        xs->data[pos] = '\0';
+    }
     else
     {
-        memmove(xs->data + pos, xs->data + pos + count,
-                xs->size - pos - count); /* <<< */
         xs->size -= count;
+        /* <<< */
+        memmove(xs->data + pos, xs->data + pos + count,
+                xs->size - pos);
+        xs->data[xs->size] = '\0';
     }
-
-    xs->data[xs->size] = '\0';
 }
 
 void xstr_push_back(xstr_t* xs, char ch)

@@ -5,7 +5,11 @@
 
 int int_cmp(const void* l, const void* r)
 {
-    return *(int*)l - *(int*)r;
+    if (*(int*)l > *(int*)r)
+        return 1;
+    if (*(int*)l < *(int*)r)
+        return -1;
+    return  0;
 }
 
 void on_destroy(void* v)
@@ -81,8 +85,8 @@ void test()
     xvec_prepend(xv, vs, sizeof(vs) / sizeof(vs[0]));
     traverse(xv);
 
-    qsort(xvec_data(xv), xvec_size(xv), sizeof(int), int_cmp);
     printf("sort\n");
+    qsort(xvec_data(xv), xvec_size(xv), sizeof(int), int_cmp);
     traverse(xv);
 
     xvec_free(xv);

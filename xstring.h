@@ -67,7 +67,7 @@ void xstr_push_back(xstr_t* xs, char ch);
 /* remove the last character. 'xs->size' must > 0. */
 void xstr_pop_back(xstr_t* xs);
 
-/* append a 'xstr' to the end. */
+/* append 'xstr' to the end. */
 #define xstr_append_str(dest, src) \
             xstr_append(dest, xstr_data(src), xstr_size(src))
 /* prepend 'xstr' to the begin. */

@@ -27,6 +27,19 @@ static int capacity_expand(xvec_t* xv, size_t size)
     return -1;
 }
 
+static void* values_destroy(xvec_t* xv, size_t pos, int count)
+{
+    unsigned char* v = xvec_at(xv, pos);
+
+    while (count-- > 0)
+    {
+        xv->destroy_cb((void*)v);
+        v += xv->val_size;
+    }
+
+    return (void*)v;
+}
+
 xvec_t* xvec_new(int capacity, size_t val_size, xvec_destroy_cb cb)
 {
     xvec_t* r = malloc(sizeof(xvec_t));
@@ -98,16 +111,7 @@ void xvec_erase(xvec_t* xv, size_t pos, int count)
     if (count < 0 || pos + count >= xv->size)
     {
         if (xv->destroy_cb)
-        {
-            count = xv->size - pos;
-            v = xvec_at(xv, pos);
-
-            while (count-- > 0)
-            {
-                xv->destroy_cb((void*)v);
-                v += xv->val_size;
-            }
-        }
+            values_destroy(xv, pos, xv->size - pos);
 
         xv->size = pos;
     }
@@ -116,19 +120,9 @@ void xvec_erase(xvec_t* xv, size_t pos, int count)
         xv->size -= count;
 
         if (xv->destroy_cb)
-        {
-            v = xvec_at(xv, pos);
-
-            while (count-- > 0)
-            {
-                xv->destroy_cb((void*)v);
-                v += xv->val_size;
-            }
-        }
+            v = values_destroy(xv, pos, count);
         else
-        {
             v = xvec_at(xv, pos + count);
-        }
 
         /* <<< */
         memmove(xvec_at(xv, pos), v,
@@ -146,10 +140,10 @@ void xvec_pop_back(xvec_t* xv)
 
 void xvec_pop_front(xvec_t* xv)
 {
+    --xv->size;
+
     if (xv->destroy_cb)
         xv->destroy_cb(xvec_at(xv, 0));
-
-    --xv->size;
     /* <<< */
     memmove(xvec_at(xv, 0), xvec_at(xv, 1),
             xv->val_size * xv->size);
@@ -157,18 +151,8 @@ void xvec_pop_front(xvec_t* xv)
 
 void xvec_clear(xvec_t* xv)
 {
-    unsigned char* v;
-
     if (xv->destroy_cb)
-    {
-        v = xv->data;
-
-        while (xv->size-- > 0)
-        {
-            xv->destroy_cb((void*)v);
-            v += xv->val_size;
-        }
-    }
+        values_destroy(xv, 0, xv->size);
 
     xv->size = 0;
 }

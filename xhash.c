@@ -158,7 +158,7 @@ xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
     ++xh->size;
 
     /* check loadfactor */
-    if (xh->size * 100 / xh->bkt_size > xh->loadfactor)
+    if (xh->size * 100 > xh->bkt_size * xh->loadfactor)
         buckets_expand(xh);
 
     return iter;

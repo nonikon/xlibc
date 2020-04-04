@@ -49,8 +49,29 @@ void test()
     xlist_free(xl);
 }
 
+void test1()
+{
+    xlist_t xl;
+    int v = 100;
+
+    xlist_init(&xl, sizeof(int), on_int_destroy);
+
+    ++v; xlist_push_back(&xl, &v);
+    ++v; xlist_push_back(&xl, &v);
+    ++v; xlist_push_front(&xl, &v);
+    ++v; xlist_push_front(&xl, &v);
+    traverse(&xl);
+
+    xlist_pop_back(&xl);
+    xlist_pop_back(&xl);
+    traverse(&xl);
+
+    xlist_destroy(&xl);
+}
+
 int main(int argc, char** argv)
 {
-    test();
+    // test();
+    test1();
     return 0;
 }

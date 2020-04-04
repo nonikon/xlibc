@@ -22,11 +22,16 @@ struct xvec
     unsigned char*  data;
 };
 
-/* allocate memory for a 'xvec_t', 'val_size' is the size of element value.
+/* initialize a 'xvec_t'. 'val_size' is the size of element value.
  * 'cb' is called when element destroy, can be NULL, but it usually can't be NULL
  * when value type is a pointer or contains a pointer. */
+xvec_t* xvec_init(xvec_t* xv, int capacity, size_t val_size, xvec_destroy_cb cb);
+/* destroy a 'xvec_t' which has called 'xvec_init'. */
+void xvec_destroy(xvec_t* xv);
+
+/* allocate memory for a 'xvec_t' and initialize it. */
 xvec_t* xvec_new(int capacity, size_t val_size, xvec_destroy_cb cb);
-/* release memory for a 'xvec_t'. */
+/* release memory for a 'xvec_t' which 'xvec_t' returns. */
 void xvec_free(xvec_t* xv);
 
 /* access the value at index 'i'. */

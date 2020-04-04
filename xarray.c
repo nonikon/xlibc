@@ -11,18 +11,32 @@
 #define XARRAY_MAX_SHIFT    (XARRAY_INDEX_BITS - XARRAY_INDEX_BITS % XARRAY_BITS)
 #endif
 
+xarray_t* xarray_init(xarray_t* array, size_t val_size,
+            xarray_destroy_cb cb)
+{
+    memset(array, 0, sizeof(xarray_t));
+
+    array->val_size = val_size;
+    array->destroy_cb = cb;
+    array->root.shift = XARRAY_MAX_SHIFT;
+
+    return array;
+}
+
+void xarray_destroy(xarray_t* array)
+{
+    xarray_clear(array);
+#ifndef XARRAY_NO_CACHE
+    xarray_node_cache_free(array);
+    xarray_block_cache_free(array);
+#endif
+}
+
 xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb)
 {
     xarray_t* array = malloc(sizeof(xarray_t));
 
-    if (array)
-    {
-        memset(array, 0, sizeof(xarray_t));
-
-        array->val_size = val_size;
-        array->destroy_cb = cb;
-        array->root.shift = XARRAY_MAX_SHIFT;
-    }
+    if (array) xarray_init(array, val_size, cb);
 
     return array;
 }

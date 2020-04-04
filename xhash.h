@@ -8,8 +8,7 @@
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
  * cache. define 'XHASH_NO_CACHE' to disable it. */
-
-// #define XHASH_NO_CACHE
+#define XHASH_NO_CACHE
 
 #ifndef XHASH_DEFAULT_SIZE
 #define XHASH_DEFAULT_SIZE          64 // MUST be 2^n
@@ -50,14 +49,20 @@ struct xhash
     xhash_node_t**      buckets;
 };
 
-/* allocate memory and initialize a 'xhash_t'.
+/* initialize a 'xhash_t'.
  * 'size' is the init bucket size, MUST be 2^n or -1 (means default).
  * 'hash_cb' is used to get hash code of an element, can't be 'NULL'.
  * 'equal_cb' is used to check the equals of two elements, can't be 'NULL'.
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
+xhash_t* xhash_init(xhash_t* xh, int size, size_t data_size,
+            xhash_hash_cb hash_cb, xhash_equal_cb equal_cb, xhash_destroy_cb destroy_cb);
+/* destroy a 'xhash_t' which has called 'xhash_init'. */
+void xhash_destroy(xhash_t* xh);
+
+/* allocate memory and initialize a 'xhash_t'. */
 xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
             xhash_equal_cb equal_cb, xhash_destroy_cb destroy_cb);
-/* release memory for a 'xhash_t'. */
+/* release memory for a 'xhash_t' which 'xhash_new' returns. */
 void xhash_free(xhash_t* xh);
 
 #ifndef XHASH_NO_CACHE

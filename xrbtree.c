@@ -487,22 +487,37 @@ static inline void __rb_erase_color(xrbt_node_t *parent, xrbt_node_t **root)
  * +++++ linux kernel rbtree interface - end +++++
  */
 
+xrbt_t* xrbt_init(xrbt_t* tr, size_t data_size,
+            xrbt_compare_cb compare_cb, xrbt_destroy_cb destroy_cb)
+{
+    tr->compare_cb  = compare_cb;
+    tr->destroy_cb  = destroy_cb;
+    tr->data_size   = data_size;
+    tr->size        = 0;
+#ifndef XRBT_NO_CACHE
+    tr->cache       = NULL;
+#endif
+    /* no check 'tr->root' null or not */
+    tr->root        = NULL;
+
+    return tr;
+}
+
+void xrbt_destroy(xrbt_t* tr)
+{
+    xrbt_clear(tr);
+#ifndef XRBT_NO_CACHE
+    xrbt_cache_free(tr);
+#endif
+}
+
 xrbt_t* xrbt_new(size_t data_size, xrbt_compare_cb compare_cb,
-                xrbt_destroy_cb destroy_cb)
+            xrbt_destroy_cb destroy_cb)
 {
     xrbt_t* tr = malloc(sizeof(xrbt_t));
 
-    if (tr)
-    {
-        tr->compare_cb = compare_cb;
-        tr->destroy_cb = destroy_cb;
-        tr->data_size = data_size;
-        tr->size = 0;
-#ifndef XRBT_NO_CACHE
-        tr->cache = NULL;
-#endif
-        tr->root = NULL;
-    }
+    if (tr) xrbt_init(tr, data_size,
+                compare_cb, destroy_cb);
 
     return tr;
 }

@@ -27,14 +27,11 @@
  *     Index 0                   Index 2N+1
  */
 
-/*
- * cache can decrease memory allocation. node (or block) will
+/* cache can decrease memory allocation. node (or block) will
  * be put into cache when it being erased, and next insertion
  * will pop one node (or block) from cache. define 'XARRAY_NO_CACHE'
- * to disable it.
- */
-
-// #define XARRAY_NO_CACHE
+ * to disable it. */
+#define XARRAY_NO_CACHE
 
 #ifndef XARRAY_BITS
 #define XARRAY_BITS         6   // [1, 8]
@@ -92,9 +89,14 @@ struct xarray
     xarray_block_t      root;       /* root block. */
 };
 
+/* initialize a 'xarray_t'. */
+xarray_t* xarray_init(xarray_t* array, size_t val_size, xarray_destroy_cb cb);
+/* destroy a 'xarray_t' which has called 'xarray_init'. */
+void xarray_destroy(xarray_t* array);
+
 /* allocate memory and initialize a 'xarray_t'. */
 xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb);
-/* release memory for a 'xarray_t'. */
+/* release memory for a 'xarray_t' which 'xarray_new' returns. */
 void xarray_free(xarray_t* array);
 
 #ifndef XARRAY_NO_CACHE

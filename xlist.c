@@ -3,21 +3,34 @@
 
 #include "xlist.h"
 
+xlist_t* xlist_init(xlist_t* xl,
+        size_t val_size, xlist_destroy_cb cb)
+{
+    xl->size        = 0;
+    xl->val_size    = val_size;
+    xl->destroy_cb  = cb;
+#ifndef XLIST_NO_CACHE
+    xl->cache       = NULL;
+#endif
+    xl->head.next   = &xl->head;
+    xl->head.prev   = &xl->head;
+
+    return xl;
+}
+
+void xlist_destroy(xlist_t* xl)
+{
+    xlist_clear(xl);
+#ifndef XLIST_NO_CACHE
+    xlist_cache_free(xl);
+#endif
+}
+
 xlist_t* xlist_new(size_t val_size, xlist_destroy_cb cb)
 {
     xlist_t* r = malloc(sizeof(xlist_t));
 
-    if (r)
-    {
-        r->size = 0;
-        r->val_size = val_size;
-        r->destroy_cb = cb;
-#ifndef XLIST_NO_CACHE
-        r->cache = NULL;
-#endif
-        r->head.next = &r->head;
-        r->head.prev = &r->head;
-    }
+    if (r) xlist_init(r, val_size, cb);
 
     return r;
 }
@@ -108,7 +121,6 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
 }
 
 #ifndef XLIST_NO_CACHE
-
 void xlist_cache_free(xlist_t* xl)
 {
     xlist_node_t* c = xl->cache;
@@ -120,11 +132,9 @@ void xlist_cache_free(xlist_t* xl)
         c = xl->cache;
     }
 }
-
 #endif // XLIST_NO_CACHE
 
 #ifndef XLIST_NO_CUT
-
 void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
 {
     iter->prev->next = iter->next;
@@ -166,5 +176,4 @@ void xlist_cut_free(xlist_t* xl, void* pvalue)
     free(xlist_value_iter(pvalue));
 #endif
 }
-
 #endif // XLIST_NO_CUT

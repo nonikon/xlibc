@@ -58,6 +58,41 @@ static int buckets_expand(xhash_t* xh)
     return 0;
 }
 
+xhash_t* xhash_init(xhash_t* xh, int size, size_t data_size,
+            xhash_hash_cb hash_cb, xhash_equal_cb equal_cb,
+            xhash_destroy_cb destroy_cb)
+{
+    xh->hash_cb     = hash_cb;
+    xh->equal_cb    = equal_cb;
+    xh->destroy_cb  = destroy_cb;
+    xh->bkt_size    = size > 0 ? size : XHASH_DEFAULT_SIZE;
+    xh->data_size   = data_size;
+    xh->size        = 0;
+    xh->loadfactor  = XHASH_DEFAULT_LOADFACTOR;
+#ifndef XHASH_NO_CACHE
+    xh->cache       = NULL;
+#endif
+    /* no check 'xh->buckets' null or not */
+    xh->buckets     = malloc(sizeof(xhash_node_t*) * xh->bkt_size);
+
+    if (xh->buckets)
+    {
+        memset(xh->buckets, 0, sizeof(xhash_node_t*) * xh->bkt_size);
+        return xh;
+    }
+
+    return NULL;
+}
+
+void xhash_destroy(xhash_t* xh)
+{
+    xhash_clear(xh);
+#ifndef XHASH_NO_CACHE
+    xhash_cache_free(xh);
+#endif
+    free(xh->buckets);
+}
+
 xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
             xhash_equal_cb equal_cb, xhash_destroy_cb destroy_cb)
 {
@@ -65,27 +100,10 @@ xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
 
     if (xh)
     {
-        xh->hash_cb = hash_cb;
-        xh->equal_cb = equal_cb;
-        xh->destroy_cb = destroy_cb;
-
-        xh->bkt_size = size > 0 ? size : XHASH_DEFAULT_SIZE;
-        xh->data_size = data_size;
-        xh->size = 0;
-        xh->loadfactor = XHASH_DEFAULT_LOADFACTOR;
-#ifndef XHASH_NO_CACHE
-        xh->cache = NULL;
-#endif
-        xh->buckets = malloc(sizeof(xhash_node_t*) * xh->bkt_size);
-
-        if (xh->buckets)
-        {
-            memset(xh->buckets, 0, sizeof(xhash_node_t*) * xh->bkt_size);
+        if (xhash_init(xh, size, data_size,
+                hash_cb, equal_cb, destroy_cb))
             return xh;
-        }
-
         free(xh);
-        return NULL;
     }
 
     return NULL;

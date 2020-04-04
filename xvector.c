@@ -40,26 +40,40 @@ static void* values_destroy(xvec_t* xv, size_t pos, int count)
     return (void*)v;
 }
 
+xvec_t* xvec_init(xvec_t* xv, int capacity, size_t val_size,
+            xvec_destroy_cb cb)
+{
+    xv->capacity = capacity > 0
+            ? capacity : XVEC_DEFAULT_CAPACITY;
+    /* no check 'xv->data' null or not */
+    xv->data = malloc(val_size * xv->capacity);
+
+    if (xv->data)
+    {
+        xv->destroy_cb  = cb;
+        xv->size        = 0;
+        xv->val_size    = val_size;
+        return xv;
+    }
+
+    return NULL;
+}
+
+void xvec_destroy(xvec_t* xv)
+{
+    xvec_clear(xv);
+    free(xv->data);
+}
+
 xvec_t* xvec_new(int capacity, size_t val_size, xvec_destroy_cb cb)
 {
     xvec_t* r = malloc(sizeof(xvec_t));
 
     if (r)
     {
-        r->capacity = capacity > 0
-                ? capacity : XVEC_DEFAULT_CAPACITY;
-        r->data = malloc(val_size * r->capacity);
-
-        if (r->data)
-        {
-            r->destroy_cb = cb;
-            r->size = 0;
-            r->val_size = val_size;
+        if (xvec_init(r, capacity, val_size, cb))
             return r;
-        }
-
         free(r);
-        return NULL;
     }
 
     return NULL;

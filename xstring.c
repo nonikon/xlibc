@@ -27,25 +27,58 @@ static int capacity_expand(xstr_t* xs, size_t size)
     return -1;
 }
 
+xstr_t* xstr_init(xstr_t* xs, int capacity)
+{
+    xs->capacity = capacity > 0
+            ? capacity : XSTR_DEFAULT_CAPACITY;
+    /* no check 'xs->data' null or not */
+    xs->data = malloc(xs->capacity);
+
+    if (xs->data)
+    {
+        xs->size = 0;
+        xs->data[0] = '\0';
+        return xs;
+    }
+
+    return NULL;
+}
+
+xstr_t* xstr_init_with(xstr_t* xs, const char* cstr, int size)
+{
+    if (size < 0)
+        for (size = 0; cstr[size]; ++size) { }
+
+    xs->capacity = size + 1;
+    /* no check 'xs->data' null or not */
+    xs->data = malloc(xs->capacity);
+
+    if (xs->data)
+    {
+        memcpy(xs->data, cstr, size);
+
+        xs->size = size;
+        xs->data[size] = '\0';
+        return xs;
+    }
+
+    return NULL;
+}
+
+void xstr_destroy(xstr_t* xs)
+{
+    free(xs->data);
+}
+
 xstr_t* xstr_new(int capacity)
 {
     xstr_t* r = malloc(sizeof(xstr_t));
 
     if (r)
     {
-        r->capacity = capacity > 0
-                ? capacity : XSTR_DEFAULT_CAPACITY;
-        r->data = malloc(r->capacity);
-
-        if (r->data)
-        {
-            r->size = 0;
-            r->data[0] = '\0';
+        if (xstr_init(r, capacity))
             return r;
-        }
-
         free(r);
-        return NULL;
     }
 
     return NULL;
@@ -53,29 +86,13 @@ xstr_t* xstr_new(int capacity)
 
 xstr_t* xstr_new_with(const char* cstr, int size)
 {
-    xstr_t* r;
-
-    if (size < 0)
-        for (size = 0; cstr[size]; ++size) { }
-
-    r = malloc(sizeof(xstr_t));
+    xstr_t* r = malloc(sizeof(xstr_t));
 
     if (r)
     {
-        r->data = malloc(size + 1);
-
-        if (r->data)
-        {
-            memcpy(r->data, cstr, size);
-
-            r->size = size;
-            r->capacity = size + 1;
-            r->data[size] = '\0';
+        if (xstr_init_with(r, cstr, size))
             return r;
-        }
-
         free(r);
-        return NULL;
     }
 
     return NULL;
@@ -165,6 +182,7 @@ void xstr_pop_back(xstr_t* xs)
     xs->data[--xs->size] = '\0';
 }
 
+#ifndef XSTR_NO_EXTRA
 const char g_xstr_i2c_table[] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
@@ -230,3 +248,4 @@ unsigned int atoui(const char* str, int base)
 
     return acc;
 }
+#endif // XSTR_NO_EXTRA

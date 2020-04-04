@@ -8,9 +8,9 @@
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
  * cache. define 'XLIST_NO_CACHE' to disable it. */
-// #define XLIST_NO_CACHE
+#define XLIST_NO_CACHE
 
-/* disable xlist_cut_* interface. */
+/* uncomment this line to disable xlist_cut_* interface. */
 // #define XLIST_NO_CUT
 
 typedef struct xlist        xlist_t;
@@ -37,11 +37,16 @@ struct xlist
     xlist_node_t        head;
 };
 
-/* allocate memory for a 'xlist_t', 'val_size' is the size of element value.
- * 'cb' is called when element destroy, can be NULL, but it usually can't be NULL
- * when value type is a pointer or contains a pointer. */
+/* initialize a 'xlist_t', 'val_size' is the size of element value.
+ * 'cb' is called when element destroy, can be NULL, but it usually
+ * can't be NULL when value type is a pointer or contains a pointer. */
+xlist_t* xlist_init(xlist_t* xl, size_t val_size, xlist_destroy_cb cb);
+/* destroy a 'xlist_t' which has called 'xlist_init'. */
+void xlist_destroy(xlist_t* xl);
+
+/* allocate memory for a 'xlist_t' and initialize it. */
 xlist_t* xlist_new(size_t val_size, xlist_destroy_cb cb);
-/* release memory for a 'xlist_t'. */
+/* release memory for a 'xlist_t' which 'xlist_new' returns. */
 void xlist_free(xlist_t* xl);
 
 #ifndef XLIST_NO_CACHE

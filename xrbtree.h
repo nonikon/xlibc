@@ -3,14 +3,12 @@
 
 #include <stddef.h>
 
-/* Red-black tree implementation is from linux kernel v5.3.7. (https://www.kernel.org/)
- * Can be used to implement 'set' and 'map' container. */
+/* red-black tree implementation is from linux kernel v5.3.7. (https://www.kernel.org/)*/
 
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
  * cache. define 'XRBT_NO_CACHE' to disable it. */
-
-// #define XRBT_NO_CACHE
+#define XRBT_NO_CACHE
 
 typedef struct xrbt         xrbt_t;
 typedef struct xrbt_node    xrbt_node_t;
@@ -37,12 +35,18 @@ struct xrbt {
     xrbt_node_t*    root;
 };
 
-/* allocate memory and initialize a 'xrbt_t'.
+/* initialize a 'xrbt_t'.
  * 'compare_cb' is called when comparing two datas, can't be 'NULL'.
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
+xrbt_t* xrbt_init(xrbt_t* tr, size_t data_size,
+            xrbt_compare_cb compare_cb, xrbt_destroy_cb destroy_cb);
+/* destroy a 'xrbt_t' which has called 'xrbt_init'. */
+void xrbt_destroy(xrbt_t* tr);
+
+/* allocate memory for a 'xrbt_t' and initialize it. */
 xrbt_t* xrbt_new(size_t data_size, xrbt_compare_cb compare_cb,
-                xrbt_destroy_cb destroy_cb);
-/* release memory for a 'xrbt_t'. */
+            xrbt_destroy_cb destroy_cb);
+/* release memory for a 'xrbt_t' which 'xrbt_new' returns. */
 void xrbt_free(xrbt_t* tr);
 
 #ifndef XLIST_NO_CACHE

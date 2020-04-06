@@ -31,7 +31,7 @@ void xvec_destroy(xvec_t* xv);
 
 /* allocate memory for a 'xvec_t' and initialize it. */
 xvec_t* xvec_new(int capacity, size_t val_size, xvec_destroy_cb cb);
-/* release memory for a 'xvec_t' which 'xvec_t' returns. */
+/* release memory for a 'xvec_t' which 'xvec_new' returns. */
 void xvec_free(xvec_t* xv);
 
 /* access the value at index 'i'. */

@@ -190,10 +190,10 @@ const char g_xstr_i2c_table[] = {
     'U', 'V', 'W', 'X', 'Y', 'Z'
 };
 
-char* uitoa(char* buf, unsigned int val, int radix)
+char* ultoa(char* buf, unsigned long val, int radix)
 {
     int off = 0;
-    unsigned int v = val;
+    unsigned long v = val;
 
     if (!v) { ++off; }
     else do
@@ -231,9 +231,9 @@ const unsigned char g_xstr_c2i_table[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-unsigned int atoui(const char* str, int base)
+unsigned long atoul(const char* str, int base)
 {
-    unsigned int acc = 0;
+    unsigned long acc = 0;
     unsigned char v;
 
     while (*str)

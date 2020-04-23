@@ -53,11 +53,11 @@ void test1()
 {
     char buf[64];
 
-    uitoa(buf, 34253256, 10);
+    ultoa(buf, 34253256, 10);
     printf("[str] %s\n", buf);
 
     strcat(buf, "16.,ewiuhfo");
-    printf("[num] %u\n", atoui(buf, 10));
+    printf("[num] %lu\n", atoul(buf, 10));
 
     uctoa_hex(buf, 0xAB);
     buf[2] = '\0';

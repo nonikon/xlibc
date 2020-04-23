@@ -98,13 +98,13 @@ void xstr_pop_back(xstr_t* xs);
 extern const char g_xstr_i2c_table[];
 extern const unsigned char g_xstr_c2i_table[];
 
-/* unsigned int -> string, return a pointer pointed to 'buf'.
+/* unsigned long -> string, return a pointer pointed to 'buf'.
  * 'buf' size 36 may be the best.
  * radix: 2 ~ 36.
  * ex:
  *     val = 65535, radix = 10 -> buf = "65535".
  *     val = 65535, radix = 16 -> buf = "FFFF". */
-char* uitoa(char* buf, unsigned int val, int radix);
+char* ultoa(char* buf, unsigned long val, int radix);
 /* unsigned char -> hex string, return a pointer pointed to 'buf'. */
 static inline void uctoa_hex(char buf[2], unsigned char val)
 {
@@ -112,9 +112,9 @@ static inline void uctoa_hex(char buf[2], unsigned char val)
     buf[1] = g_xstr_i2c_table[val & 15];
 }
 
-/* string -> unsigned int.
+/* string -> unsigned long.
  * base: 2 ~ 36. */
-unsigned int atoui(const char* str, int base);
+unsigned long atoul(const char* str, int base);
 /* hex string -> unsigned char. */
 static inline unsigned char atouc_hex(const char str[2])
 {

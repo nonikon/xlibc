@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "xstring.h"
 
@@ -52,12 +54,14 @@ void test()
 void test1()
 {
     char buf[64];
+    char* p;
 
     ultoa(buf, 34253256, 10);
     printf("[str] %s\n", buf);
 
     strcat(buf, "16.,ewiuhfo");
-    printf("[num] %lu\n", atoul(buf, 10));
+    printf("[num] %lu\n", atoul(buf, &p, 10));
+    printf("p -> '%s'\n", p);
 
     uctoa_hex(buf, 0xAB);
     buf[2] = '\0';

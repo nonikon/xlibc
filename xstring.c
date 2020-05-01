@@ -192,21 +192,24 @@ const char g_xstr_i2c_table[] = {
 
 char* ultoa(char* buf, unsigned long val, int radix)
 {
-    int off = 0;
-    unsigned long v = val;
+    int l = 0;
+    int r = 0;
+    char c;
 
-    if (!v) { ++off; }
-    else do
+    while (val)
     {
-        v /= radix;
-        ++off;
-    } while (v);
-
-    buf[off] = '\0';
-    while (off)
-    {
-        buf[--off] = g_xstr_i2c_table[val % radix];
+        buf[r++] = g_xstr_i2c_table[val % radix];
         val /= radix;
+    }
+
+    buf[r--] = '\0';
+
+    /* string reverse */
+    while (l < r)
+    {
+        c = buf[l];
+        buf[l++] = buf[r];
+        buf[r--] = c;
     }
 
     return buf;
@@ -231,7 +234,7 @@ const unsigned char g_xstr_c2i_table[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-unsigned long atoul(const char* str, int base)
+unsigned long atoul(const char* str, char** ep, int base)
 {
     unsigned long acc = 0;
     unsigned char v;
@@ -245,6 +248,8 @@ unsigned long atoul(const char* str, int base)
 
         acc = acc * base + v;
     }
+
+    if (ep) *ep = (char*)str;
 
     return acc;
 }

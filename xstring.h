@@ -112,9 +112,9 @@ static inline void uctoa_hex(char buf[2], unsigned char val)
     buf[1] = g_xstr_i2c_table[val & 15];
 }
 
-/* string -> unsigned long.
+/* string -> unsigned long. similar to 'strtol'.
  * base: 2 ~ 36. */
-unsigned long atoul(const char* str, int base);
+unsigned long atoul(const char* str, char** ep, int base);
 /* hex string -> unsigned char. */
 static inline unsigned char atouc_hex(const char str[2])
 {

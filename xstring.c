@@ -196,11 +196,19 @@ char* ultoa(char* buf, unsigned long val, int radix)
     int r = 0;
     char c;
 
-    while (val)
+    if (!val)
+    {
+        buf[0] = '0';
+        buf[1] = '\0';
+        return buf;
+    }
+
+    do
     {
         buf[r++] = g_xstr_i2c_table[val % radix];
         val /= radix;
     }
+    while (val);
 
     buf[r--] = '\0';
 

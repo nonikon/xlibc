@@ -46,8 +46,7 @@ xstr_t* xstr_init(xstr_t* xs, int capacity)
 
 xstr_t* xstr_init_with(xstr_t* xs, const char* cstr, int size)
 {
-    if (size < 0)
-        for (size = 0; cstr[size]; ++size) { }
+    if (size < 0) size = strlen(cstr);
 
     xs->capacity = size + 1;
     /* no check 'xs->data' null or not */
@@ -121,8 +120,7 @@ void xstr_assign_at(xstr_t* xs, size_t pos, const char* cstr, int size)
 
 void xstr_append(xstr_t* xs, const char* cstr, int size)
 {
-    if (size < 0)
-        for (size = 0; cstr[size]; ++size) { }
+    if (size < 0) size = strlen(cstr);
 
     if (need_expand(xs, size))
         capacity_expand(xs, size); /* ignore expand failed */
@@ -135,8 +133,7 @@ void xstr_append(xstr_t* xs, const char* cstr, int size)
 
 void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size)
 {
-    if (size < 0)
-        for (size = 0; cstr[size]; ++size) { }
+    if (size < 0) size = strlen(cstr);
 
     if (need_expand(xs, size))
         capacity_expand(xs, size); /* ignore expand failed */

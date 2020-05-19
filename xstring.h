@@ -23,7 +23,7 @@ struct xstr
 
 /* initialize a 'xstr_t' with 'capacity'. 'capacity' <= 0 means default. */
 xstr_t* xstr_init(xstr_t* xs, int capacity);
-/* initialize a 'xstr_t' with 'cstr'. 'size' < 0 means auto calculate. */
+/* initialize a 'xstr_t' with 'cstr'. 'size' < 0 means 'strlen(cstr)'. */
 xstr_t* xstr_init_with(xstr_t* xs, const char* cstr, int size);
 /* destroy a 'xstr_t' which has called 'xstr_init*'. */
 void xstr_destroy(xstr_t* xs);
@@ -32,7 +32,7 @@ void xstr_destroy(xstr_t* xs);
  * 'capacity' <= 0 means default. */
 xstr_t* xstr_new(int capacity);
 /* allocate memory for a 'xstr_t' and initialize it with 'cstr'.
- * 'size' < 0 means auto calculate. */
+ * 'size' < 0 means 'strlen(cstr)'. */
 xstr_t* xstr_new_with(const char* cstr, int size);
 /* release memory for a 'xstr_t' which 'xstr_new*' returns. */
 void xstr_free(xstr_t* xs);
@@ -55,12 +55,12 @@ void xstr_free(xstr_t* xs);
 #define xstr_capacity(xs)   ((xs)->capacity)
 
 /* assign characters to a 'xstr_t' beginning at 'pos'.
- * 'pos' must <= 'xs->size'. 'size' < 0 means auto calculate. */
+ * 'pos' must <= 'xs->size'. 'size' < 0 means 'strlen(cstr)'. */
 void xstr_assign_at(xstr_t* xs, size_t pos, const char* cstr, int size);
-/* append characters to the end. 'size' < 0 means auto calculate. */
+/* append characters to the end. 'size' < 0 means 'strlen(cstr)'. */
 void xstr_append(xstr_t* xs, const char* cstr, int size);
 /* insert characters at 'pos'. 'pos' must <= 'xs->size'.
- * 'size' < 0 means auto calculate. */
+ * 'size' < 0 means 'strlen(cstr)'. */
 void xstr_insert(xstr_t* xs, size_t pos, const char* cstr, int size);
 /* remove 'count' characters starting at 'pos'.
  * 'pos' must <= 'xs->size'. 'count' < 0 means end of 'xs'. */

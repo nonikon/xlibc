@@ -144,23 +144,23 @@ void xvec_erase(xvec_t* xv, size_t pos, int count)
     }
 }
 
-void xvec_pop_back(xvec_t* xv)
+void xvec_push_back(xvec_t* xv, const void* pvalue)
 {
-    --xv->size;
+    if (need_expand(xv, 1))
+        capacity_expand(xv, 1);
 
-    if (xv->destroy_cb)
-        xv->destroy_cb(xvec_at(xv, xv->size));
+    if (pvalue)
+        memcpy(xvec_at(xv, xv->size), pvalue, xv->val_size);
+
+    ++xv->size;
 }
 
-void xvec_pop_front(xvec_t* xv)
+void xvec_pop_back(xvec_t* xv)
 {
-    --xv->size;
-
     if (xv->destroy_cb)
-        xv->destroy_cb(xvec_at(xv, 0));
-    /* <<< */
-    memmove(xvec_at(xv, 0), xvec_at(xv, 1),
-            xv->val_size * xv->size);
+        xv->destroy_cb(xvec_at(xv, xv->size));
+
+    --xv->size;
 }
 
 void xvec_clear(xvec_t* xv)

@@ -63,13 +63,8 @@ void xvec_clear(xvec_t* xv);
 #define xvec_prepend(xv, pvalues, count)    xvec_insert(xv, 0, pvalues, count)
 
 /* append one value to the end. */
-#define xvec_push_back(xv, pvalue)          xvec_append(xv, pvalue, 1)
-/* append one value to the begin. */
-#define xvec_push_front(xv, pvalue)         xvec_prepend(xv, pvalue, 1)
-
+void xvec_push_back(xvec_t* xv, const void* pvalue);
 /* remove the first value. */
 void xvec_pop_back(xvec_t* xv);
-/* remove the last value. */
-void xvec_pop_front(xvec_t* xv);
 
 #endif // _XVECTOR_H_

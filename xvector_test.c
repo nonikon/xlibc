@@ -52,11 +52,6 @@ void test()
     xvec_push_back(xv, &v);
     traverse(xv);
     
-    v = 7777;
-    printf("push_front\n");
-    xvec_push_front(xv, &v);
-    traverse(xv);
-    
     for (i = 0; i < sizeof(vs) / sizeof(vs[0]); ++i)
     {
         vs[i] = rand();
@@ -71,10 +66,6 @@ void test()
     
     printf("pop_back\n");
     xvec_pop_back(xv);
-    traverse(xv);
-    
-    printf("pop_front\n");
-    xvec_pop_front(xv);
     traverse(xv);
     
     for (i = 0; i < sizeof(vs) / sizeof(vs[0]); ++i)

@@ -10,6 +10,9 @@
  * cache. define 'XLIST_NO_CACHE' to disable it. */
 #define XLIST_NO_CACHE
 
+/* uncomment this line to disable xlist_msort interface. */
+// #define XLIST_NO_SORT
+
 /* uncomment this line to disable xlist_cut_* interface. */
 // #define XLIST_NO_CUT
 
@@ -18,6 +21,7 @@ typedef struct xlist_node   xlist_node_t;
 typedef struct xlist_node*  xlist_iter_t;
 
 typedef void (*xlist_destroy_cb)(void* pvalue);
+typedef int  (*xlist_compare_cb)(void* l, void* r);
 
 struct xlist_node
 {
@@ -94,6 +98,11 @@ xlist_iter_t xlist_insert(xlist_t* xl, xlist_iter_t iter, const void* pvalue);
 xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter);
 /* clears the elements (no cache) in a 'xlist_t'. */
 void xlist_clear(xlist_t* xl);
+
+#ifndef XLIST_NO_SORT
+/* non-recursive merge sort for xlist. */
+void xlist_msort(xlist_t* xl, xlist_compare_cb cmp);
+#endif
 
 #ifndef XLIST_NO_CUT
 /* cut the element at 'iter', 'iter' MUST be valid.

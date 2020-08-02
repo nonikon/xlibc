@@ -134,6 +134,103 @@ void xlist_cache_free(xlist_t* xl)
 }
 #endif // XLIST_NO_CACHE
 
+#ifndef XLIST_NO_SORT
+static xlist_node_t* _merge_list(xlist_compare_cb cmp,
+        xlist_node_t* a, xlist_node_t* b)
+{
+    xlist_node_t* head;
+    xlist_iter_t* tail = &head;
+
+    /* merge list 'a' and 'b' */
+    while (1)
+    {
+        if (cmp(xlist_iter_value(a),
+                xlist_iter_value(b)) <= 0)
+        {
+            *tail = a;
+            tail = &a->next;
+            a = a->next;
+            if (!a)
+            {
+                *tail = b;
+                break;
+            }
+        }
+        else
+        {
+            *tail = b;
+            tail = &b->next;
+            b = b->next;
+            if (!b)
+            {
+                *tail = a;
+                break;
+            }
+        }
+    }
+
+    return head;
+}
+
+/* refer to Linux kernel source 'lib/list_sort.c':
+ * https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/lib/list_sort.c */
+void xlist_msort(xlist_t* xl, xlist_compare_cb cmp)
+{
+    xlist_node_t* list = xlist_begin(xl);
+    xlist_node_t* pending = NULL;
+    xlist_node_t* temp;
+
+    size_t count = 0;
+    size_t bits;
+
+    /* less than 2 nodes */
+    if (list == xlist_rbegin(xl)) return;
+
+    xlist_rbegin(xl)->next = NULL;
+
+    do
+    {
+        /* move one node from 'list' to 'pending' */
+        list->prev = pending;
+        pending = list;
+        list = list->next;
+        pending->next = NULL;
+
+        for (bits = count++; bits & 1; bits >>= 1)
+        {
+            /* merge the last 2 pending lists */
+            temp = _merge_list(cmp, pending, pending->prev);
+            temp->prev = pending->prev->prev;
+            pending = temp;
+        }
+    }
+    while (list);
+
+    /* merge the rest of pending lists */
+    list = pending;
+    while (pending->prev)
+    {
+        list = _merge_list(cmp, list, pending->prev);
+        pending = pending->prev;
+    }
+
+    temp = &xl->head;
+    temp->next = list;
+
+    /* rebuild 'prev' links */
+    do
+    {
+        list->prev = temp;
+        temp = list;
+        list = list->next;
+    }
+    while (list);
+
+    xl->head.prev = temp;
+    temp->next = &xl->head;
+}
+#endif // XLIST_NO_SORT
+
 #ifndef XLIST_NO_CUT
 void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
 {

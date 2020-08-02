@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "xlist.h"
 
 void traverse(xlist_t* xl)
@@ -69,9 +71,58 @@ void test1()
     xlist_destroy(&xl);
 }
 
+
+int int_cmp(void* l, void* r)
+{
+    if (*(int*)l > *(int*)r)
+        return 1;
+    if (*(int*)l < *(int*)r)
+        return -1;
+    return  0;
+}
+void test_sort(int n)
+{
+    xlist_t xl;
+    clock_t start, end;
+
+    xlist_init(&xl, sizeof(int), NULL);
+
+    srand(time(NULL));
+    for (int i = 0; i < n; ++i)
+    {
+        int v = rand() & 0x7fffffff;
+        xlist_push_back(&xl, &v);
+    }
+    printf("generate %d random elements done.\n", n);
+
+    start = clock();
+    xlist_msort(&xl, int_cmp);
+    end = clock();
+    printf("sort time %lfs\n",
+        (double)(end - start) / CLOCKS_PER_SEC);
+
+    /* check sort result */
+    n = 0;
+    for (xlist_iter_t i = xlist_begin(&xl);
+        i != xlist_end(&xl); i = xlist_iter_next(i))
+    {
+        int* e = xlist_iter_value(i);
+        if (*e < n)
+        {
+            printf("sort error!\n");
+            break;
+        }
+        n = *e;
+    }
+    printf("check sort result done.\n");
+
+    xlist_destroy(&xl);
+}
+
 int main(int argc, char** argv)
 {
     // test();
-    test1();
+    // test1();
+    test_sort(5000000);
     return 0;
 }

@@ -3,6 +3,8 @@
 #include <time.h>
 #include "xlist.h"
 
+#define RAND_SEED   123456
+
 void traverse(xlist_t* xl)
 {
     xlist_iter_t iter = xlist_begin(xl);
@@ -71,7 +73,6 @@ void test1()
     xlist_destroy(&xl);
 }
 
-
 int int_cmp(void* l, void* r)
 {
     if (*(int*)l > *(int*)r)
@@ -87,35 +88,44 @@ void test_sort(int n)
 
     xlist_init(&xl, sizeof(int), NULL);
 
-    srand(time(NULL));
+    srand(RAND_SEED);
+    start = clock();
     for (int i = 0; i < n; ++i)
     {
         int v = rand() & 0x7fffffff;
         xlist_push_back(&xl, &v);
     }
-    printf("generate %d random elements done.\n", n);
+    end = clock();
+    printf("generate %d random elements done, time %lfs.\n",
+        n, (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
     xlist_msort(&xl, int_cmp);
     end = clock();
-    printf("sort time %lfs\n",
+    printf("sort done, time %lfs.\n",
         (double)(end - start) / CLOCKS_PER_SEC);
 
     /* check sort result */
-    n = 0;
+    int v_prev = 0;
     for (xlist_iter_t i = xlist_begin(&xl);
         i != xlist_end(&xl); i = xlist_iter_next(i))
     {
-        int* e = xlist_iter_value(i);
-        if (*e < n)
+        int* v = xlist_iter_value(i);
+        if (*v < v_prev)
         {
-            printf("sort error!\n");
+            printf("wrong sequence!\n");
             break;
         }
-        n = *e;
+        v_prev = *v;
+        --n;
     }
-    printf("check sort result done.\n");
+    if (n)
+        printf("sort error! n = %d.\n", n);
+    else
+        printf("check sort result done, no error.\n");
 
+    printf("press any key to continue...\n");
+    getchar();
     xlist_destroy(&xl);
 }
 

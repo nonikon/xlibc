@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 #include "xrbtree.h"
+
+#define RAND_SEED 123456
 
 /* +++++++++++++++++++++test++++++++++++++++++++++  */
 
@@ -88,16 +89,6 @@ void test()
 /*----------------------test----------------------*/
 
 /* +++++++++++++++++++++testspeed++++++++++++++++++++++  */
-// random an integer
-static inline void rand_int(int* n)
-{
-    unsigned char* c = (unsigned char*)n;
-
-    c[0] = rand() & 0xff;
-    c[1] = rand() & 0xff;
-    c[2] = rand() & 0xff;
-    c[3] = rand() & 0xff;
-}
 int on_cmp2(void* l, void* r)
 {
     return *(int*)l > *(int*)r ? 1 :
@@ -123,7 +114,6 @@ void tree_overview(xrbt_t* rb)
         printf("%d ", acc[depth]);
     printf(".\n");
 }
-#define RAND_SEED 123456
 void test_speed(int nvalues)
 {
     xrbt_t* rb = xrbt_new(sizeof(int), on_cmp2, NULL);
@@ -135,17 +125,16 @@ void test_speed(int nvalues)
     begin = clock();
     for (i = 0; i < nvalues; ++i)
     {
-        // value = rand();
-        rand_int(&value);
+        value = rand() & 0x7fffffff;
         if (!xrbt_insert(rb, &value))
         {
-            printf("out of memory when insert %d value\n", i);
+            printf("out of memory when insert %d value.\n", i);
             break;
         }
     }
     end = clock();
-    printf("insert %d random integer done, time %lfs\n",
-            nvalues, (double)(end - begin) / CLOCKS_PER_SEC);
+    printf("insert %d random integer done, values %ld, time %lfs.\n",
+            nvalues, xrbt_size(rb), (double)(end - begin) / CLOCKS_PER_SEC);
 
     tree_overview(rb);
 
@@ -155,13 +144,12 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        // value = rand();
-        rand_int(&value);
+        value = rand() & 0x7fffffff;
         if (xrbt_find(rb, &value))
             ++count;
     }
     end = clock();
-    printf("search %d random integer done, time %lfs, found %d\n",
+    printf("search %d random integer done, time %lfs, %d found.\n",
             nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
 
     // reset the same seed to get the same series number
@@ -170,8 +158,7 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        // value = rand();
-        rand_int(&value);
+        value = rand() & 0x7fffffff;
         xrbt_iter_t iter = xrbt_find(rb, &value);
         if (iter)
             xrbt_erase(rb, iter);
@@ -179,11 +166,10 @@ void test_speed(int nvalues)
             ++count;
     }
     end = clock();
-    printf("search and remove %d random integer done, time %lfs, %d not found!\n",
+    printf("remove %d random integer done, time %lfs, %d not found.\n",
             nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
 
-    tree_overview(rb);
-
+    printf("press any key to continue...\n");
     getchar();
     xrbt_free(rb);
 }

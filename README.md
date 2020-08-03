@@ -4,10 +4,9 @@
 
 XLIBC provide some C container libraries which have the following features:
 
-- Cross-platform (use standard C API)
-- Potable (no thirdparty dependency and no dependency with each other container. You can just copy one 'xxx.c' file and one 'xxx.h' file to you project)
-- Lightweight (simple to use)
-- Efficient
+- Cross-platform (using standard C library)
+- Potable (no thirdparty dependency and no dependency with each other container)
+- Efficient (can be more faster than some C++ STL, see `stl_test.cpp`/`xlist_test.c`/`xhash_test.c`/`xrbtree_test.c`)
 
 ## Usage
 

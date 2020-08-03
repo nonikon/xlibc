@@ -1,16 +1,20 @@
-MAKE_VERSION = debug
+MAKE_VERSION = release
 
 CC = gcc
+CXX = g++
 CFLAGS = -Wall -std=c99
+CXXFLAGS = -Wall -std=c++11
 LDFLAGS = -Wall
 
 ifeq ($(MAKE_VERSION), debug)
 CFLAGS += -g -DDEBUG
+CXXFLAGS += -g -DDEBUG
 else
 CFLAGS += -O2
+CXXFLAGS += -O2
 endif
 
-TARGET = \
+TARGET = stl_test \
 	xlist_test xarray_test xrbtree_test \
 	xstring_test xhash_test xvector_test
 
@@ -34,6 +38,9 @@ xhash_test : xhash.o xhash_test.o
 xvector_test : xvector.o xvector_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
+stl_test : stl_test.cpp
+	@echo "\tLD $@"
+	@$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 %.o : %.c
 	@echo "\tCC $@"

@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 #include "xhash.h"
+
+#define RAND_SEED 123456
 
 typedef struct
 {
@@ -103,16 +104,6 @@ void test()
     xhash_free(xh);
 }
 
-// random an integer
-static inline void rand_int(int* n)
-{
-    unsigned char* c = (unsigned char*)n;
-
-    c[0] = rand() & 0xff;
-    c[1] = rand() & 0xff;
-    c[2] = rand() & 0xff;
-    c[3] = rand() & 0xff;
-}
 unsigned int_hash(void* v)
 {
     return *(unsigned*)v;
@@ -121,7 +112,6 @@ int int_equal(void* l, void* r)
 {
     return *(int*)l == *(int*)r;
 }
-#define RAND_SEED 123456
 void test_speed(int nvalues)
 {
     xhash_t* xh = xhash_new(-1, sizeof(int), int_hash, int_equal, NULL);
@@ -133,16 +123,15 @@ void test_speed(int nvalues)
     begin = clock();
     for (i = 0; i < nvalues; ++i)
     {
-        // value = rand();
-        rand_int(&value);
+        value = rand() & 0x7fffffff;
         if (!xhash_put(xh, &value))
         {
-            printf("out of memory when insert %d value\n", i);
+            printf("out of memory when insert %d value.\n", i);
             break;
         }
     }
     end = clock();
-    printf("insert %d random integer done, buckets %ld, values %ld, time %lfs\n",
+    printf("insert %d random integer done, buckets %ld, values %ld, time %lfs.\n",
             nvalues, xh->bkt_size, xhash_size(xh), (double)(end - begin) / CLOCKS_PER_SEC);
 
     xhash_dump(xh);
@@ -153,23 +142,21 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        // value = rand();
-        rand_int(&value);
+        value = rand() & 0x7fffffff;
         if (xhash_get(xh, &value))
             ++count;
     }
     end = clock();
-    printf("search %d random integer done, time %lfs, found %d\n",
+    printf("search %d random integer done, time %lfs, found %d.\n",
             nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
-    
+
     // reset the same seed to get the same series number
     srand(RAND_SEED);
     // remove time test
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        // value = rand();
-        rand_int(&value);
+        value = rand() & 0x7fffffff;
         xhash_iter_t iter = xhash_get(xh, &value);
         if (iter)
             xhash_remove(xh, iter);
@@ -177,11 +164,10 @@ void test_speed(int nvalues)
             ++count;
     }
     end = clock();
-    printf("search and remove %d random integer done, time %lfs, %d not found!\n",
+    printf("remove %d random integer done, time %lfs, %d not found.\n",
             nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
 
-    xhash_dump(xh);
-
+    printf("press any key to continue...\n");
     getchar();
     xhash_free(xh);
 }

@@ -51,7 +51,9 @@ void xlist_clear(xlist_t* xl)
 {
     xlist_iter_t iter = xlist_begin(xl);
 
-    while (iter != xlist_end(xl))
+    if (xlist_empty(xl)) return;
+
+    do
     {
         iter = iter->next;
 
@@ -59,6 +61,7 @@ void xlist_clear(xlist_t* xl)
             xl->destroy_cb(xlist_iter_value(iter->prev));
         free(iter->prev);
     }
+    while (iter != xlist_end(xl));
 
     xl->size = 0;
     xl->head.prev = iter;

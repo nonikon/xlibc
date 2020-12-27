@@ -54,8 +54,8 @@ void test()
     xarray_unset(array, 14);
     traverse(array);
 
-    mystruct_t* pmyst = xarray_get_ex(array, 10027);
-    if (pmyst != XARRAY_INVALID)
+    mystruct_t* pmyst = xarray_get_value(array, 10027);
+    if (pmyst != XARRAY_INVALID_VALUE)
         printf("\nfound array[10027] = %d_%d\n", pmyst->a, pmyst->b);
 
     printf("\n");

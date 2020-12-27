@@ -79,8 +79,8 @@ void test()
     {
         sprintf(myst.key, "%d", i);
 
-        pmyst = xhash_get_ex(xh, &myst);
-        if (pmyst != XHASH_INVALID)
+        pmyst = xhash_get_data(xh, &myst);
+        if (pmyst != XHASH_INVALID_DATA)
             ;//printf("found key = \"%s\", value = %d\n", pmyst->key, pmyst->value);
         else
             printf("key \"%s\" not found!\n", myst.key);
@@ -89,8 +89,8 @@ void test()
 #undef END_VALUE
     // find element in another way!
     // but this only work when 'key' is the first member in 'mystruct_t'!
-    pmyst = xhash_get_ex(xh, "311111900");
-    if (pmyst != XHASH_INVALID)
+    pmyst = xhash_get_data(xh, "311111900");
+    if (pmyst != XHASH_INVALID_DATA)
         printf("found!!!!!!!!!! %d\n", pmyst->value);
 
     // traverse
@@ -103,6 +103,8 @@ void test()
 
     xhash_free(xh);
 }
+
+/* ------------------------------------- */
 
 unsigned int_hash(void* v)
 {
@@ -172,9 +174,64 @@ void test_speed(int nvalues)
     xhash_free(xh);
 }
 
+/* ------------------------------------- */
+typedef struct {
+    short key;
+    char value[4096];
+} kv_t;
+
+unsigned kv_hash(void* pdata)
+{
+    return (unsigned) ((kv_t*)pdata)->key;
+}
+int kv_equal(void* l, void* r)
+{
+    return ((kv_t*)l)->key == ((kv_t*)r)->key;
+}
+void test_ex()
+{
+    xhash_t xh;
+    xhash_iter_t iter;
+    kv_t* kv;
+    short k;
+
+    xhash_init(&xh, -1, sizeof(kv_t), kv_hash, kv_equal, NULL);
+
+    k = 123;
+    kv = xhash_iter_data(xhash_put_ex(&xh, &k, sizeof(short)));
+    strcpy(kv->value, "string 123");
+
+    k = 234;
+    kv = xhash_iter_data(xhash_put_ex(&xh, &k, sizeof(short)));
+    strcpy(kv->value, "string 234");
+
+    k = 345;
+    kv = xhash_iter_data(xhash_put_ex(&xh, &k, sizeof(short)));
+    strcpy(kv->value, "string 345");
+
+    k = 456;
+    kv = xhash_iter_data(xhash_put_ex(&xh, &k, sizeof(short)));
+    strcpy(kv->value, "string 456");
+
+    k = 234;
+    if (xhash_get(&xh, &k))
+        printf("key [234] found\n");
+    
+    for (iter = xhash_begin(&xh);
+            iter != xhash_end(); iter = xhash_iter_next(&xh, iter)) {
+        kv = xhash_iter_data(iter);
+        printf("key [%d], value [%s]\n", kv->key, kv->value);
+    }
+
+    xhash_destroy(&xh);
+}
+
+/* ------------------------------------- */
+
 int main(int argc, char** argv)
 {
     // test();
+    // test_ex();
     test_speed(5000000);
     return 0;
 }

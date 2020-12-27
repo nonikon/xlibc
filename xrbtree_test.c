@@ -71,17 +71,17 @@ void test()
     // key already exist, 'xrbt_insert' will do nothing (value will not be modified!)
     xrbt_insert(rb, &myst);
 
-    p = xrbt_find_ex(rb, &myst);
-    if (p != XRBT_INVALID)
+    p = xrbt_find_data(rb, &myst);
+    if (p != XRBT_INVALID_DATA)
     {
         printf("found [%s, %d], erase\n", p->key, p->value);
-        xrbt_erase_ex(rb, p);
+        xrbt_erase_data(rb, p);
         traverse(rb);
     }
     
     // !!!!!
-    p = xrbt_find_ex(rb, "234235fsd");
-    if (p != XRBT_INVALID)
+    p = xrbt_find_data(rb, "234235fsd");
+    if (p != XRBT_INVALID_DATA)
         printf("found [%s, %d]!!!!\n", p->key, p->value);
 
     xrbt_free(rb);

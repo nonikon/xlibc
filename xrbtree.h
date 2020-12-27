@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-/* red-black tree implementation is from linux kernel v5.3.7. (https://www.kernel.org/)*/
+/* red-black tree implementation is from linux kernel v5.3.7. (https://www.kernel.org/) */
 
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
@@ -82,7 +82,10 @@ xrbt_iter_t xrbt_riter_next(xrbt_iter_t iter);
 /* insert an element with specific data, return an iterator to
  * the inserted element, return 'NULL' when out of memory.
  * if the data is already exist, do nothing an return it's iterator. */
-xrbt_iter_t xrbt_insert(xrbt_t* tr, const void* pdata);
+#define xrbt_insert(tr, pdata)  xrbt_insert_ex(tr, pdata, (tr)->data_size)
+/* similar to 'xrbt_insert', but useful when we don't want to init all 'data_size',
+ * just init the <key> (which size is 'ksz'), and set <value> by yourself later. */
+xrbt_iter_t xrbt_insert_ex(xrbt_t* tr, const void* pdata, size_t ksz);
 /* find an element with specific data. return an iterator to the element with specific data,
  * return 'NULL' if not found. */
 xrbt_iter_t xrbt_find(xrbt_t* tr, const void* pdata);
@@ -92,13 +95,13 @@ void xrbt_erase(xrbt_t* tr, xrbt_iter_t iter);
 void xrbt_clear(xrbt_t* tr);
 
 /* find an element with specific data. return a pointer to the element
- * with specific data, return 'XRBT_INVALID' if not found.
+ * with specific data, return 'XRBT_INVALID_DATA' if not found.
  * the return value can call 'xrbt_data_iter' to get it's iterator. */
-#define xrbt_find_ex(tr, pdata)     xrbt_iter_data(xrbt_find(tr, pdata))
-/* remove an element, 'pdata' should be the return value of 'xrbt_find_ex'
- * and not equal to 'XRBT_INVALID'. */
-#define xrbt_erase_ex(tr, pdata)    xrbt_erase(tr, xrbt_data_iter(pdata))
+#define xrbt_find_data(tr, pdata)   xrbt_iter_data(xrbt_find(tr, pdata))
+/* remove an element, 'pdata' should be the return value of 'xrbt_find_data'
+ * and not equal to 'XRBT_INVALID_DATA'. */
+#define xrbt_erase_data(tr, pdata)  xrbt_erase(tr, xrbt_data_iter(pdata))
 
-#define XRBT_INVALID    xrbt_iter_data((xrbt_iter_t)0)
+#define XRBT_INVALID_DATA    xrbt_iter_data((xrbt_iter_t)0)
 
 #endif // _XRBTREE_H_

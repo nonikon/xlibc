@@ -534,7 +534,7 @@ void xrbt_free(xrbt_t* tr)
     }
 }
 
-xrbt_iter_t xrbt_insert(xrbt_t* tr, const void* pdata)
+xrbt_iter_t xrbt_insert_ex(xrbt_t* tr, const void* pdata, size_t ksz)
 {
     xrbt_iter_t* iter = &tr->root;
     xrbt_node_t* parent = NULL;
@@ -569,7 +569,7 @@ xrbt_iter_t xrbt_insert(xrbt_t* tr, const void* pdata)
 #ifndef XRBT_NO_CACHE
     }
 #endif
-    memcpy(xrbt_iter_data(nwnd), pdata, tr->data_size);
+    memcpy(xrbt_iter_data(nwnd), pdata, ksz);
 
     __rb_insert_node(nwnd, parent, iter);
     __rb_insert_color(nwnd, &tr->root);

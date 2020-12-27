@@ -137,16 +137,17 @@ void xarray_unset(xarray_t* array, xuint index);
 void xarray_clear(xarray_t* array);
 
 /* get value at 'index'. return a pointer pointed to the value at index,
- * return 'XARRAY_INVALID' if value has not been set.
+ * return 'XARRAY_INVALID_VALUE' if value has not been set.
  * the return value can call 'xarray_value_iter' to get it's iterator. */
-#define xarray_get_ex(array, index) xarray_iter_value(xarray_get(array, index))
+#define xarray_get_value(array, index) \
+                xarray_iter_value(xarray_get(array, index))
 /* set value at 'index', 'pvalue' can be 'NULL' (means set it later,
  * just allocate memory). if 'index' has already been set, it will be
  * unset (call 'destroy_cb') first. return a pointer pointed to the
- * value at 'index'. return 'XARRAY_INVALID' if out of memory. */
-#define xarray_set_ex(array, index, pvalue) \
-                                    xarray_iter_value(xarray_set(array, index, pvalue))
+ * value at 'index'. return 'XARRAY_INVALID_VALUE' if out of memory. */
+#define xarray_set_value(array, index, pvalue) \
+                xarray_iter_value(xarray_set(array, index, pvalue))
 
-#define XARRAY_INVALID  xarray_iter_value((xarray_iter_t)0)
+#define XARRAY_INVALID_VALUE  xarray_iter_value((xarray_iter_t)0)
 
 #endif // _XARRAY_H_

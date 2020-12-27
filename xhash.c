@@ -122,7 +122,7 @@ void xhash_free(xhash_t* xh)
     }
 }
 
-xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
+xhash_iter_t xhash_put_ex(xhash_t* xh, const void* pdata, size_t ksz)
 {
     unsigned hash = xh->hash_cb((void*)pdata);
     xhash_iter_t iter = xh->buckets[hash & (xh->bkt_size - 1)];
@@ -155,7 +155,7 @@ xhash_iter_t xhash_put(xhash_t* xh, const void* pdata)
 #ifndef XHASH_NO_CACHE
     }
 #endif
-    memcpy(xhash_iter_data(iter), pdata, xh->data_size);
+    memcpy(xhash_iter_data(iter), pdata, ksz);
 
     if (prev)
     {

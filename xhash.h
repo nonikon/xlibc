@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-/* Hash table, logic base on java hash table. */
+/* Hash table, logic based on java hash table. */
 
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
@@ -97,7 +97,10 @@ xhash_iter_t xhash_iter_next(xhash_t* xh, xhash_iter_t iter);
 /* insert an element with specific data, return an iterator to
  * the inserted element, return 'NULL' when out of memory.
  * if the data is already exist, do nothing an return it's iterator. */
-xhash_iter_t xhash_put(xhash_t* xh, const void* pdata);
+#define xhash_put(xh, pdata)    xhash_put_ex(xh, pdata, (xh)->data_size)
+/* similar to 'xhash_put', but useful when we don't want to init all 'data_size',
+ * just init the <key> (which size is 'ksz'), and set <value> by yourself later. */
+xhash_iter_t xhash_put_ex(xhash_t* xh, const void* pdata, size_t ksz);
 /* find an element with specific data. return an iterator to
  * the element with specific data, return 'NULL' if not found. */
 xhash_iter_t xhash_get(xhash_t* xh, const void* pdata);
@@ -107,14 +110,16 @@ void xhash_remove(xhash_t* xh, xhash_iter_t iter);
 void xhash_clear(xhash_t* xh);
 
 /* find an element with specific data. return a pointer to the element
- * with specific data, return 'XHASH_INVALID' if not found.
+ * with specific data, return 'XHASH_INVALID_DATA' if not found.
  * the return value can call 'xhash_data_iter' to get it's iterator. */
-#define xhash_get_ex(xh, pdata)     xhash_iter_data(xhash_get(xh, pdata))
-/* remove an element, 'pdata' should be the return value of 'xhash_get_ex'
- * and not equal to 'XHASH_INVALID'. */
-#define xhash_remove_ex(xh, pdata)  xhash_remove(xh, xhash_data_iter(pdata))
+#define xhash_get_data(xh, pdata) \
+                xhash_iter_data(xhash_get(xh, pdata))
+/* remove an element, 'pdata' should be the return value of 'xhash_get_data'
+ * and not equal to 'XHASH_INVALID_DATA'. */
+#define xhash_remove_data(xh, pdata) \
+                xhash_remove(xh, xhash_data_iter(pdata))
 
-#define XHASH_INVALID   xhash_iter_data((xhash_iter_t)0)
+#define XHASH_INVALID_DATA  xhash_iter_data((xhash_iter_t)0)
 
 /* Some helper hash function, can be used in 'xhash_hash_cb'. */
 

@@ -234,7 +234,9 @@ void xhash_clear(xhash_t* xh)
     {
         curr = xh->buckets[i];
 
-        while (curr)
+        if (!curr) continue;
+
+        do
         {
             next = curr->next;
 
@@ -244,6 +246,7 @@ void xhash_clear(xhash_t* xh)
 
             curr = next;
         }
+        while (curr);
 
         xh->buckets[i] = NULL;
     }

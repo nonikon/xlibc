@@ -132,6 +132,16 @@ xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue);
 /* removes the last element. see 'xlist_erase'. */
 #define xlist_pop_back(xl)              xlist_erase(xl, xlist_rbegin(xl))
 
+/* allocate memory for an element and insert before 'iter'.
+ * return a pointer pointed to the element.  */
+#define xlist_alloc(xl, iter)           xlist_iter_value(xlist_insert(xl, iter, NULL))
+/* allocate memory for an element and insert to the beginning.
+ * return a pointer pointed to the element.  */
+#define xlist_alloc_front(xl)           xlist_iter_value(xlist_push_front(xl, NULL))
+/* allocate memory for an element and insert to the end.
+ * return a pointer pointed to the element.  */
+#define xlist_alloc_back(xl)            xlist_iter_value(xlist_push_back(xl, NULL))
+
 #if XLIST_ENABLE_CUT
 /* cut the first element. see 'xlist_cut'. */
 #define xlist_cut_front(xl)             xlist_cut(xl, xlist_begin(xl))

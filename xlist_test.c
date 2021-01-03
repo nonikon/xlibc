@@ -49,6 +49,12 @@ void test()
     xlist_paste_back(xl, pv);
     traverse(xl);
 
+    pv = xlist_alloc_front(xl);
+    *pv = 1234;
+    pv = xlist_alloc_back(xl);
+    *pv = 2345;
+    traverse(xl);
+
     printf("\n");
     xlist_free(xl);
 }
@@ -131,8 +137,8 @@ void test_sort(int n)
 
 int main(int argc, char** argv)
 {
-    // test();
+    test();
     // test1();
-    test_sort(5000000);
+    // test_sort(5000000);
     return 0;
 }

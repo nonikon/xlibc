@@ -9,7 +9,7 @@ xlist_t* xlist_init(xlist_t* xl,
     xl->size        = 0;
     xl->val_size    = val_size;
     xl->destroy_cb  = cb;
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
     xl->cache       = NULL;
 #endif
     xl->head.next   = &xl->head;
@@ -21,7 +21,7 @@ xlist_t* xlist_init(xlist_t* xl,
 void xlist_destroy(xlist_t* xl)
 {
     xlist_clear(xl);
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
     xlist_cache_free(xl);
 #endif
 }
@@ -40,7 +40,7 @@ void xlist_free(xlist_t* xl)
     if (xl)
     {
         xlist_clear(xl);
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
         xlist_cache_free(xl);
 #endif
         free(xl);
@@ -73,7 +73,7 @@ xlist_iter_t xlist_insert(xlist_t* xl,
 {
     xlist_iter_t newi;
 
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
     if (xl->cache)
     {
         newi = xl->cache;
@@ -85,7 +85,7 @@ xlist_iter_t xlist_insert(xlist_t* xl,
         newi = malloc(sizeof(xlist_node_t) + xl->val_size);
         if (!newi)
             return NULL;
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
     }
 #endif
 
@@ -112,7 +112,7 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
     if (xl->destroy_cb)
         xl->destroy_cb(xlist_iter_value(iter));
 
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
     iter->next = xl->cache;
     xl->cache = iter;
 #else
@@ -123,7 +123,7 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter)
     return r;
 }
 
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
 void xlist_cache_free(xlist_t* xl)
 {
     xlist_node_t* c = xl->cache;
@@ -135,9 +135,9 @@ void xlist_cache_free(xlist_t* xl)
         c = xl->cache;
     }
 }
-#endif // XLIST_NO_CACHE
+#endif // XLIST_ENABLE_CACHE
 
-#ifndef XLIST_NO_SORT
+#if XLIST_ENABLE_SORT
 static xlist_node_t* _merge_list(xlist_compare_cb cmp,
         xlist_node_t* a, xlist_node_t* b)
 {
@@ -232,9 +232,9 @@ void xlist_msort(xlist_t* xl, xlist_compare_cb cmp)
     xl->head.prev = temp;
     temp->next = &xl->head;
 }
-#endif // XLIST_NO_SORT
+#endif // XLIST_ENABLE_SORT
 
-#ifndef XLIST_NO_CUT
+#if XLIST_ENABLE_CUT
 void* xlist_cut(xlist_t* xl, xlist_iter_t iter)
 {
     iter->prev->next = iter->next;
@@ -262,7 +262,7 @@ xlist_iter_t xlist_paste(xlist_t* xl,
 
 void xlist_cut_free(xlist_t* xl, void* pvalue)
 {
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
     xlist_iter_t iter = xlist_value_iter(pvalue);
 
     if (xl->destroy_cb)
@@ -276,4 +276,4 @@ void xlist_cut_free(xlist_t* xl, void* pvalue)
     free(xlist_value_iter(pvalue));
 #endif
 }
-#endif // XLIST_NO_CUT
+#endif // XLIST_ENABLE_CUT

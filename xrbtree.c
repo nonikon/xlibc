@@ -494,7 +494,7 @@ xrbt_t* xrbt_init(xrbt_t* tr, size_t data_size,
     tr->destroy_cb  = destroy_cb;
     tr->data_size   = data_size;
     tr->size        = 0;
-#ifndef XRBT_NO_CACHE
+#if XRBT_ENABLE_CACHE
     tr->cache       = NULL;
 #endif
     /* no check 'tr->root' null or not */
@@ -506,7 +506,7 @@ xrbt_t* xrbt_init(xrbt_t* tr, size_t data_size,
 void xrbt_destroy(xrbt_t* tr)
 {
     xrbt_clear(tr);
-#ifndef XRBT_NO_CACHE
+#if XRBT_ENABLE_CACHE
     xrbt_cache_free(tr);
 #endif
 }
@@ -527,7 +527,7 @@ void xrbt_free(xrbt_t* tr)
     if (tr)
     {
         xrbt_clear(tr);
-#ifndef XRBT_NO_CACHE
+#if XRBT_ENABLE_CACHE
         xrbt_cache_free(tr);
 #endif
         free(tr);
@@ -554,7 +554,7 @@ xrbt_iter_t xrbt_insert_ex(xrbt_t* tr, const void* pdata, size_t ksz)
             return *iter;
     }
 
-#ifndef XRBT_NO_CACHE
+#if XRBT_ENABLE_CACHE
     if (tr->cache)
     {
         nwnd = tr->cache;
@@ -566,7 +566,7 @@ xrbt_iter_t xrbt_insert_ex(xrbt_t* tr, const void* pdata, size_t ksz)
         nwnd = malloc(sizeof(xrbt_node_t) + tr->data_size);
         if (!nwnd)
             return NULL;
-#ifndef XRBT_NO_CACHE
+#if XRBT_ENABLE_CACHE
     }
 #endif
     memcpy(xrbt_iter_data(nwnd), pdata, ksz);
@@ -611,7 +611,7 @@ void xrbt_erase(xrbt_t* tr, xrbt_iter_t iter)
     if (tr->destroy_cb)
         tr->destroy_cb(xrbt_iter_data(iter));
 
-#ifndef XRBT_NO_CACHE
+#if XRBT_ENABLE_CACHE
     iter->rb_right = tr->cache;
     tr->cache = iter;
 #else
@@ -621,7 +621,7 @@ void xrbt_erase(xrbt_t* tr, xrbt_iter_t iter)
     --tr->size;
 }
 
-#ifndef XRBT_NO_CACHE
+#if XRBT_ENABLE_CACHE
 void xrbt_cache_free(xrbt_t* tr)
 {
     xrbt_node_t* c = tr->cache;

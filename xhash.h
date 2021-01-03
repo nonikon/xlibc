@@ -7,8 +7,10 @@
 
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
- * cache. define 'XHASH_NO_CACHE' to disable it. */
-#define XHASH_NO_CACHE
+ * cache. define 'XHASH_ENABLE_CACHE=1' to enable it. */
+#ifndef XHASH_ENABLE_CACHE
+#define XHASH_ENABLE_CACHE          0
+#endif
 
 #ifndef XHASH_DEFAULT_SIZE
 #define XHASH_DEFAULT_SIZE          64 // MUST be 2^n
@@ -43,7 +45,7 @@ struct xhash
     size_t              data_size;
     size_t              size;       // element (node) count
     size_t              loadfactor;
-#ifndef XHASH_NO_CACHE
+#if XHASH_ENABLE_CACHE
     xhash_node_t*       cache;      // cache nodes
 #endif
     xhash_node_t**      buckets;
@@ -65,7 +67,7 @@ xhash_t* xhash_new(int size, size_t data_size, xhash_hash_cb hash_cb,
 /* release memory for a 'xhash_t' which 'xhash_new' returns. */
 void xhash_free(xhash_t* xh);
 
-#ifndef XHASH_NO_CACHE
+#if XHASH_ENABLE_CACHE
 /* free all cache nodes in a 'xhash_t'. */
 void xhash_cache_free(xhash_t* xh);
 #endif

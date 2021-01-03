@@ -7,14 +7,20 @@
 
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
- * cache. define 'XLIST_NO_CACHE' to disable it. */
-#define XLIST_NO_CACHE
+ * cache. define 'XLIST_ENABLE_CACHE=1' to enable it. */
+#ifndef XLIST_ENABLE_CACHE
+#define XLIST_ENABLE_CACHE  0
+#endif
 
-/* uncomment this line to disable xlist_msort interface. */
-// #define XLIST_NO_SORT
+/* enable xlist_msort interface or not. */
+#ifndef XLIST_ENABLE_SORT
+#define XLIST_ENABLE_SORT   1
+#endif
 
-/* uncomment this line to disable xlist_cut_* interface. */
-// #define XLIST_NO_CUT
+/* enable xlist_cut_* interface or not. */
+#ifndef XLIST_ENABLE_CUT
+#define XLIST_ENABLE_CUT    1
+#endif
 
 typedef struct xlist        xlist_t;
 typedef struct xlist_node   xlist_node_t;
@@ -35,7 +41,7 @@ struct xlist
     size_t              size;
     size_t              val_size;   // element value size in 'xlist_node_t'
     xlist_destroy_cb    destroy_cb; // called when element destroy
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
     xlist_node_t*       cache;      // cache nodes
 #endif
     xlist_node_t        head;
@@ -53,7 +59,7 @@ xlist_t* xlist_new(size_t val_size, xlist_destroy_cb cb);
 /* release memory for a 'xlist_t' which 'xlist_new' returns. */
 void xlist_free(xlist_t* xl);
 
-#ifndef XLIST_NO_CACHE
+#if XLIST_ENABLE_CACHE
 /* free all cache nodes in a 'xlist_t'. */
 void xlist_cache_free(xlist_t* xl);
 #endif
@@ -99,12 +105,12 @@ xlist_iter_t xlist_erase(xlist_t* xl, xlist_iter_t iter);
 /* clears the elements (no cache) in a 'xlist_t'. */
 void xlist_clear(xlist_t* xl);
 
-#ifndef XLIST_NO_SORT
+#if XLIST_ENABLE_SORT
 /* non-recursive merge sort for xlist. */
 void xlist_msort(xlist_t* xl, xlist_compare_cb cmp);
 #endif
 
-#ifndef XLIST_NO_CUT
+#if XLIST_ENABLE_CUT
 /* cut the element at 'iter', 'iter' MUST be valid.
  * return a pointer pointed to the element value.
  * 'xlist_cut_free()' OR 'xlist_paste()' MUST be called for the return value. */
@@ -115,7 +121,7 @@ void xlist_cut_free(xlist_t* xl, void* pvalue);
  * return a iterator pointed to the 'pvalue'.
  * 'xl' element type MUST equal to the 'pvalue' type. */
 xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue);
-#endif // XLIST_NO_CUT
+#endif // XLIST_ENABLE_CUT
 
 /* inserts an element to the beginning. see 'xlist_insert'. */
 #define xlist_push_front(xl, pvalue)    xlist_insert(xl, xlist_begin(xl), pvalue)
@@ -126,7 +132,7 @@ xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue);
 /* removes the last element. see 'xlist_erase'. */
 #define xlist_pop_back(xl)              xlist_erase(xl, xlist_rbegin(xl))
 
-#ifndef XLIST_NO_CUT
+#if XLIST_ENABLE_CUT
 /* cut the first element. see 'xlist_cut'. */
 #define xlist_cut_front(xl)             xlist_cut(xl, xlist_begin(xl))
 /* cut the last element. see 'xlist_cut'. */
@@ -135,6 +141,6 @@ xlist_iter_t xlist_paste(xlist_t* xl, xlist_iter_t iter, void* pvalue);
 #define xlist_paste_front(xl, pvalue)   xlist_paste(xl, xlist_begin(xl), pvalue)
 /* paste an element to the end. see 'xlist_paste'. */
 #define xlist_paste_back(xl, pvalue)    xlist_paste(xl, xlist_end(xl), pvalue)
-#endif // XLIST_NO_CUT
+#endif // XLIST_ENABLE_CUT
 
 #endif // _XLIST_H_

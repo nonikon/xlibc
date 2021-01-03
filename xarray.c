@@ -26,7 +26,7 @@ xarray_t* xarray_init(xarray_t* array, size_t val_size,
 void xarray_destroy(xarray_t* array)
 {
     xarray_clear(array);
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
     xarray_node_cache_free(array);
     xarray_block_cache_free(array);
 #endif
@@ -46,7 +46,7 @@ void xarray_free(xarray_t* array)
     if (array)
     {
         xarray_clear(array);
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
         xarray_node_cache_free(array);
         xarray_block_cache_free(array);
 #endif
@@ -68,7 +68,7 @@ xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
 
         if (!child)
         {
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
             if (array->blk_cache)
             {
                 child = array->blk_cache;
@@ -80,7 +80,7 @@ xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
                 child = malloc(sizeof(xarray_block_t));
                 if (!child)
                     return NULL;
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
             }
 #endif
             memset(child, 0, sizeof(xarray_block_t));
@@ -104,7 +104,7 @@ xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
 
     if (!nwnd)
     {
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
         if (array->nod_cache)
         {
             nwnd = array->nod_cache;
@@ -116,7 +116,7 @@ xarray_iter_t xarray_set(xarray_t* array, xuint index, const void* pvalue)
             nwnd = malloc(sizeof(xarray_node_t) + array->val_size);
             if (!nwnd)
                 return NULL;
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
         }
 #endif
         nwnd->block = parent;
@@ -163,7 +163,7 @@ void xarray_unset(xarray_t* array, xuint index)
         if (array->destroy_cb)
             array->destroy_cb(xarray_iter_value(
                         (xarray_iter_t)block->values[i]));
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
         /* use 'xarray_node_t.block' to store next cache node */
         ((xarray_node_t*)block->values[i])->block
                         = (xarray_block_t*)array->nod_cache;
@@ -185,7 +185,7 @@ void xarray_unset(xarray_t* array, xuint index)
             block = block->parent_block;
 
             /* destroy a block */
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
             /* use 'xarray_block_t.parent_block' to store next cache block */
             ((xarray_block_t*)block->values[i])
                         ->parent_block = array->blk_cache;
@@ -267,7 +267,7 @@ void xarray_clear(xarray_t* array)
     array->root.shift = XARRAY_MAX_SHIFT;
 }
 
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
 void xarray_node_cache_free(xarray_t* array)
 {
     xarray_node_t* c = array->nod_cache;

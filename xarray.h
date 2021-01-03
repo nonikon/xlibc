@@ -29,9 +29,11 @@
 
 /* cache can decrease memory allocation. node (or block) will
  * be put into cache when it being erased, and next insertion
- * will pop one node (or block) from cache. define 'XARRAY_NO_CACHE'
- * to disable it. */
-#define XARRAY_NO_CACHE
+ * will pop one node (or block) from cache. define 'XARRAY_ENABLE_CACHE=1'
+ * to enable it. */
+#ifndef XARRAY_ENABLE_CACHE
+#define XARRAY_ENABLE_CACHE 0
+#endif
 
 #ifndef XARRAY_BITS
 #define XARRAY_BITS         6   // [1, 8]
@@ -82,7 +84,7 @@ struct xarray
                                     /* current just for DEBUG. */
     size_t              val_size;
     xarray_destroy_cb   destroy_cb; /* called when value is removed. */
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
     xarray_node_t*      nod_cache;  /* cache nodes. */
     xarray_block_t*     blk_cache;  /* cache blocks. */
 #endif
@@ -99,7 +101,7 @@ xarray_t* xarray_new(size_t val_size, xarray_destroy_cb cb);
 /* release memory for a 'xarray_t' which 'xarray_new' returns. */
 void xarray_free(xarray_t* array);
 
-#ifndef XARRAY_NO_CACHE
+#if XARRAY_ENABLE_CACHE
 /* free all cache nodes in a 'xarray_t'. */
 void xarray_node_cache_free(xarray_t* array);
 /* free all cache blocks in a 'xarray_t'. */

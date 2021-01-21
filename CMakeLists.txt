@@ -9,6 +9,14 @@ set(XLIBC_LIBRARY_TYPE "STATIC"
 set_property(CACHE XLIBC_LIBRARY_TYPE PROPERTY
     STRINGS "STATIC;SHARED")
 
+set(XLIBC_HEADERS
+    xarray.h
+    xhash.h
+    xlist.h
+    xrbtree.h
+    xstring.h
+    xvector.h
+)
 add_library(xlibc ${XLIBC_LIBRARY_TYPE}
     xarray.c
     xhash.c
@@ -17,10 +25,15 @@ add_library(xlibc ${XLIBC_LIBRARY_TYPE}
     xstring.c
     xvector.c
 )
+set_target_properties(xlibc PROPERTIES
+    PUBLIC_HEADER "${XLIBC_HEADERS}")
 
-install(TARGETS xlibc
-    DESTINATION lib
-    EXPORT xlibc-targets)
+install(TARGETS xlibc EXPORT xlibc-targets
+    PUBLIC_HEADER DESTINATION include
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
 install(EXPORT xlibc-targets
     DESTINATION lib/cmake/xlibc)
 

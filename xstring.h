@@ -5,12 +5,7 @@
 
 /* similar to C++ std::string libray. */
 
-/* uncomment this line to disable some interface such as 'uitoa'. */
-// #define XSTR_NO_EXTRA
-
-#ifndef XSTR_DEFAULT_CAPACITY
-#define XSTR_DEFAULT_CAPACITY    32
-#endif
+#include "xconfig.h"
 
 typedef struct xstr xstr_t;
 

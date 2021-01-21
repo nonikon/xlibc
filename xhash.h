@@ -5,12 +5,7 @@
 
 /* Hash table, logic based on java hash table. */
 
-/* cache can decrease memory allocation. node will be put into cache
- * when it being erased, and next insertion will pop one node from
- * cache. define 'XHASH_ENABLE_CACHE=1' to enable it. */
-#ifndef XHASH_ENABLE_CACHE
-#define XHASH_ENABLE_CACHE          0
-#endif
+#include "xconfig.h"
 
 #ifndef XHASH_DEFAULT_SIZE
 #define XHASH_DEFAULT_SIZE          64 // MUST be 2^n

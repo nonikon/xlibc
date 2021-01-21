@@ -6,6 +6,8 @@ CFLAGS = -Wall -std=c99
 CXXFLAGS = -Wall -std=c++11
 LDFLAGS = -Wall
 
+CP = cp
+
 ifeq ($(MAKE_VERSION), debug)
 CFLAGS += -g -DDEBUG
 CXXFLAGS += -g -DDEBUG
@@ -20,22 +22,26 @@ TARGET = stl_test \
 
 all : $(TARGET)
 
-xlist_test : xlist.o xlist_test.o
+xconfig.h:
+	@echo "\tGEN $@"
+	@$(CP) xconfig.default.h xconfig.h
+
+xlist_test : xconfig.h xlist.o xlist_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
-xarray_test : xarray.o xarray_test.o
+xarray_test : xconfig.h xarray.o xarray_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
-xrbtree_test : xrbtree.o xrbtree_test.o
+xrbtree_test : xconfig.h xrbtree.o xrbtree_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
-xstring_test : xstring.o xstring_test.o
+xstring_test : xconfig.h xstring.o xstring_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
-xhash_test : xhash.o xhash_test.o
+xhash_test : xconfig.h xhash.o xhash_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
-xvector_test : xvector.o xvector_test.o
+xvector_test : xconfig.h xvector.o xvector_test.o
 	@echo "\tLD $@"
 	@$(CC) -o $@ $^ $(LDFLAGS)
 stl_test : stl_test.cpp
@@ -49,5 +55,5 @@ stl_test : stl_test.cpp
 .PHONY : clean
 
 clean :
-	@echo "\tRM *.o $(TARGET)"
-	@$(RM) *.o $(TARGET)
+	@echo "\tRM *.o xconfig.h $(TARGET)"
+	@$(RM) *.o xconfig.h $(TARGET)

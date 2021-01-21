@@ -1,0 +1,38 @@
+#ifndef _XCONFIG_H_
+#define _XCONFIG_H_
+
+/* cache can decrease memory allocation. node (or block) will
+ * be put into cache when it being erased, and next insertion
+ * will pop one node (or block) from cache. define 'XARRAY_ENABLE_CACHE=1'
+ * to enable it. */
+#cmakedefine01 XARRAY_ENABLE_CACHE
+
+/* cache can decrease memory allocation. node will be put into cache
+ * when it being erased, and next insertion will pop one node from
+ * cache. define 'XHASH_ENABLE_CACHE=1' to enable it. */
+#cmakedefine01 XHASH_ENABLE_CACHE
+
+/* cache can decrease memory allocation. node will be put into cache
+ * when it being erased, and next insertion will pop one node from
+ * cache. define 'XLIST_ENABLE_CACHE=1' to enable it. */
+#cmakedefine01 XLIST_ENABLE_CACHE
+
+/* enable xlist_msort interface or not. */
+#cmakedefine01 XLIST_ENABLE_SORT
+
+/* enable xlist_cut_* interface or not. */
+#cmakedefine01 XLIST_ENABLE_CUT
+
+/* cache can decrease memory allocation. node will be put into cache
+ * when it being erased, and next insertion will pop one node from
+ * cache. define 'XRBT_ENABLE_CACHE=1' to enable it. */
+#cmakedefine01 XRBT_ENABLE_CACHE
+
+#cmakedefine XSTR_DEFAULT_CAPACITY @XSTR_DEFAULT_CAPACITY@
+
+/* uncomment this line to disable some interface such as 'uitoa'. */
+#cmakedefine XSTR_NO_EXTRA
+
+#cmakedefine XVEC_DEFAULT_CAPACITY @XVEC_DEFAULT_CAPACITY@
+
+#endif // _XCONFIG_H_

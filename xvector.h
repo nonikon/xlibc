@@ -5,9 +5,7 @@
 
 /* dynamic contiguous array, similar to C++ STL std::vector library. */
 
-#ifndef XVEC_DEFAULT_CAPACITY
-#define XVEC_DEFAULT_CAPACITY   16
-#endif
+#include "xconfig.h"
 
 typedef struct xvec xvec_t;
 

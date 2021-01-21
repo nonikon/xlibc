@@ -27,13 +27,7 @@
  *     Index 0                   Index 2N+1
  */
 
-/* cache can decrease memory allocation. node (or block) will
- * be put into cache when it being erased, and next insertion
- * will pop one node (or block) from cache. define 'XARRAY_ENABLE_CACHE=1'
- * to enable it. */
-#ifndef XARRAY_ENABLE_CACHE
-#define XARRAY_ENABLE_CACHE 0
-#endif
+#include "xconfig.h"
 
 #ifndef XARRAY_BITS
 #define XARRAY_BITS         6   // [1, 8]

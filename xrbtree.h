@@ -5,7 +5,16 @@
 
 /* red-black tree implementation is from linux kernel v5.3.7. (https://www.kernel.org/) */
 
-#include "xconfig.h"
+#ifdef HAVE_XCONFIG_H
+# include "xconfig.h"
+#else
+/* cache can decrease memory allocation. node will be put into cache
+ * when it being erased, and next insertion will pop one node from
+ * cache. define 'XRBT_ENABLE_CACHE=1' to enable it. */
+# ifndef XRBT_ENABLE_CACHE
+#  define XRBT_ENABLE_CACHE 0
+# endif
+#endif
 
 typedef struct xrbt         xrbt_t;
 typedef struct xrbt_node    xrbt_node_t;

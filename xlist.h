@@ -5,21 +5,25 @@
 
 /* doubly-linked list, similar to C++ STL std::list */
 
+#ifdef HAVE_XCONFIG_H
+# include "xconfig.h"
+#else
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
  * cache. define 'XLIST_ENABLE_CACHE=1' to enable it. */
-#ifndef XLIST_ENABLE_CACHE
-#define XLIST_ENABLE_CACHE  0
-#endif
+# ifndef XLIST_ENABLE_CACHE
+#  define XLIST_ENABLE_CACHE 0
+# endif
 
 /* enable xlist_msort interface or not. */
-#ifndef XLIST_ENABLE_SORT
-#define XLIST_ENABLE_SORT   1
-#endif
+# ifndef XLIST_ENABLE_SORT
+#  define XLIST_ENABLE_SORT 1
+# endif
 
 /* enable xlist_cut_* interface or not. */
-#ifndef XLIST_ENABLE_CUT
-#define XLIST_ENABLE_CUT    1
+# ifndef XLIST_ENABLE_CUT
+#  define XLIST_ENABLE_CUT 1
+# endif
 #endif
 
 typedef struct xlist        xlist_t;

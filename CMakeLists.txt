@@ -9,6 +9,40 @@ set(XLIBC_LIBRARY_TYPE "STATIC"
 set_property(CACHE XLIBC_LIBRARY_TYPE PROPERTY
     STRINGS "STATIC;SHARED")
 
+set(XARRAY_ENABLE_CACHE Off
+    CACHE BOOL "Enable XARRAY_ENABLE_CACHE")
+set(XHASH_ENABLE_CACHE Off
+    CACHE BOOL "Enable XHASH_ENABLE_CACHE")
+set(XHASH_DEFAULT_SIZE "64"
+    CACHE STRING "Value of XHASH_DEFAULT_SIZE")
+set(XHASH_DEFAULT_LOADFACTOR "75"
+    CACHE STRING "Value of XHASH_DEFAULT_LOADFACTOR")
+set(XLIST_ENABLE_CACHE Off
+    CACHE BOOL "Enable XLIST_ENABLE_CACHE")
+set(XLIST_ENABLE_SORT On
+    CACHE BOOL "Enable XLIST_ENABLE_SORT")
+set(XLIST_ENABLE_CUT On
+    CACHE BOOL "Enable XLIST_ENABLE_CUT")
+set(XRBT_ENABLE_CACHE Off
+    CACHE BOOL "Enable XBRT_ENABLE_CACHE")
+set(XSTR_DEFAULT_CAPACITY "32"
+    CACHE STRING "Value of XSTR_DEFAULT_CAPACITY")
+set(XSTR_NO_EXTRA Off
+    CACHE BOOL "Enable XSTR_NO_EXTRA")
+set(XVEC_DEFAULT_CAPACITY "16"
+    CACHE STRING "Value of XVEC_DEFAULT_CAPACITY")
+
+configure_file(xconfig.h.in xconfig.h)
+
+set(XLIBC_HEADERS
+    ${CMAKE_CURRENT_BINARY_DIR}/xconfig.h
+    xarray.h
+    xhash.h
+    xlist.h
+    xrbtree.h
+    xstring.h
+    xvector.h
+)
 add_library(xlibc ${XLIBC_LIBRARY_TYPE}
     xarray.c
     xhash.c
@@ -17,10 +51,22 @@ add_library(xlibc ${XLIBC_LIBRARY_TYPE}
     xstring.c
     xvector.c
 )
+target_compile_definitions(xlibc PUBLIC HAVE_XCONFIG_H)
+target_include_directories(xlibc PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+)
+set_target_properties(xlibc PROPERTIES
+    PUBLIC_HEADER "${XLIBC_HEADERS}"
+)
 
-install(TARGETS xlibc
-    DESTINATION lib
-    EXPORT xlibc-targets)
+install(TARGETS xlibc EXPORT xlibc-targets
+    PUBLIC_HEADER DESTINATION include/xlibc
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include/xlibc
+)
 install(EXPORT xlibc-targets
     DESTINATION lib/cmake/xlibc)
 

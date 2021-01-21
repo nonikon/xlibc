@@ -29,9 +29,9 @@ set(XVEC_DEFAULT_CAPACITY "16"
     CACHE STRING "Value of XVEC_DEFAULT_CAPACITY")
 
 configure_file(xconfig.h.in xconfig.h)
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 set(XLIBC_HEADERS
+    ${CMAKE_CURRENT_BINARY_DIR}/xconfig.h
     xarray.h
     xhash.h
     xlist.h
@@ -47,16 +47,21 @@ add_library(xlibc ${XLIBC_LIBRARY_TYPE}
     xstring.c
     xvector.c
 )
+target_include_directories(xlibc PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+)
 set_target_properties(xlibc PROPERTIES
-    PUBLIC_HEADER "${XLIBC_HEADERS}")
+    PUBLIC_HEADER "${XLIBC_HEADERS}"
+)
 
 install(TARGETS xlibc EXPORT xlibc-targets
     PUBLIC_HEADER DESTINATION include/xlibc
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include/xlibc
 )
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/xconfig.h" DESTINATION include/xlibc)
 install(EXPORT xlibc-targets
     DESTINATION lib/cmake/xlibc)
 

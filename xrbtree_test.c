@@ -24,7 +24,7 @@ void traverse(xrbt_t* rb)
     xrbt_iter_t iter = xrbt_begin(rb);
     mystruct_t* p;
 
-    printf("traverse size = %ld\n", xrbt_size(rb));
+    printf("traverse size = %u\n", (unsigned)xrbt_size(rb));
     while (iter != xrbt_end(rb))
     {
         p = xrbt_iter_data(iter);
@@ -106,11 +106,12 @@ void tree_overview(xrbt_t* rb)
 {
     // printf the number of nodes in every depth of rbtree
     int acc[36] = { 0 };
-    printf("\tsize %ld, ", xrbt_size(rb));
+    int depth;
+    printf("\tsize %u, ", (unsigned)xrbt_size(rb));
     if (rb->root)
         traverse2(rb->root, 0, acc);
     printf("nodes[depth]: ");
-    for (int depth = 0; acc[depth] > 0; ++depth)
+    for (depth = 0; acc[depth] > 0; ++depth)
         printf("%d ", acc[depth]);
     printf(".\n");
 }
@@ -133,8 +134,8 @@ void test_speed(int nvalues)
         }
     }
     end = clock();
-    printf("insert %d random integer done, values %ld, time %lfs.\n",
-            nvalues, xrbt_size(rb), (double)(end - begin) / CLOCKS_PER_SEC);
+    printf("insert %d random integer done, values %u, time %lfs.\n",
+            nvalues, (unsigned)xrbt_size(rb), (double)(end - begin) / CLOCKS_PER_SEC);
 
     tree_overview(rb);
 

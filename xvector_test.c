@@ -22,12 +22,11 @@ void traverse(xvec_t* xv)
     int i;
     int* vs = xvec_data(xv);
 
-    printf("[%ld/%ld] ",
-            xvec_size(xv), xvec_capacity(xv));
+    printf("[%u/%u] ", (unsigned)xvec_size(xv), 
+        (unsigned)xvec_capacity(xv));
+
     for (i = 0; i < xvec_size(xv); ++i)
-    {
         printf("%d ", vs[i]);
-    }
     printf("\n");
 }
 
@@ -40,10 +39,9 @@ void test()
     srand(123456);
 
     for (i = 0; i < sizeof(vs) / sizeof(vs[0]); ++i)
-    {
         vs[i] = rand();
-    }
-    printf("append %ld values\n", sizeof(vs) / sizeof(vs[0]));
+    printf("append %u values\n",
+        (unsigned)(sizeof(vs) / sizeof(vs[0])));
     xvec_append(xv, vs, sizeof(vs) / sizeof(vs[0]));
     traverse(xv);
 
@@ -53,10 +51,9 @@ void test()
     traverse(xv);
     
     for (i = 0; i < sizeof(vs) / sizeof(vs[0]); ++i)
-    {
         vs[i] = rand();
-    }
-    printf("insert %ld values at pos 1\n", sizeof(vs) / sizeof(vs[0]));
+    printf("insert %u values at pos 1\n",
+        (unsigned)(sizeof(vs) / sizeof(vs[0])));
     xvec_insert(xv, 1, vs, sizeof(vs) / sizeof(vs[0]));
     traverse(xv);
 
@@ -69,10 +66,9 @@ void test()
     traverse(xv);
     
     for (i = 0; i < sizeof(vs) / sizeof(vs[0]); ++i)
-    {
         vs[i] = rand();
-    }
-    printf("prepend %ld values\n", sizeof(vs) / sizeof(vs[0]));
+    printf("prepend %u values\n",
+        (unsigned)(sizeof(vs) / sizeof(vs[0])));
     xvec_prepend(xv, vs, sizeof(vs) / sizeof(vs[0]));
     traverse(xv);
 

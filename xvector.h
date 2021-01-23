@@ -6,11 +6,13 @@
 /* dynamic contiguous array, similar to C++ STL std::vector library. */
 
 #ifdef HAVE_XCONFIG_H
-# include "xconfig.h"
+#include "xconfig.h"
 #else
-# ifndef XVEC_DEFAULT_CAPACITY
-#  define XVEC_DEFAULT_CAPACITY 16
-# endif
+
+#ifndef XVEC_DEFAULT_CAPACITY
+#define XVEC_DEFAULT_CAPACITY   16
+#endif
+
 #endif
 
 typedef struct xvec xvec_t;

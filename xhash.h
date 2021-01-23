@@ -6,22 +6,24 @@
 /* Hash table, logic based on java hash table. */
 
 #ifdef HAVE_XCONFIG_H
-# include "xconfig.h"
+#include "xconfig.h"
 #else
+
 /* cache can decrease memory allocation. node will be put into cache
  * when it being erased, and next insertion will pop one node from
  * cache. define 'XHASH_ENABLE_CACHE=1' to enable it. */
-# ifndef XHASH_ENABLE_CACHE
-#  define XHASH_ENABLE_CACHE 0
-# endif
+#ifndef XHASH_ENABLE_CACHE
+#define XHASH_ENABLE_CACHE          0
+#endif
 
-# ifndef XHASH_DEFAULT_SIZE
-#  define XHASH_DEFAULT_SIZE          64 // MUST be 2^n
-# endif
+#ifndef XHASH_DEFAULT_SIZE
+#define XHASH_DEFAULT_SIZE          64 // MUST be 2^n
+#endif
 
-# ifndef XHASH_DEFAULT_LOADFACTOR
-#  define XHASH_DEFAULT_LOADFACTOR    75 // percent
-# endif
+#ifndef XHASH_DEFAULT_LOADFACTOR
+#define XHASH_DEFAULT_LOADFACTOR    75 // percent
+#endif
+
 #endif
 
 typedef struct xhash        xhash_t;

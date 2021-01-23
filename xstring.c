@@ -179,7 +179,7 @@ void xstr_pop_back(xstr_t* xs)
     xs->data[--xs->size] = '\0';
 }
 
-#ifndef XSTR_NO_EXTRA
+#if XSTR_ENABLE_EXTRA
 const char g_xstr_i2c_table[] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
@@ -187,7 +187,7 @@ const char g_xstr_i2c_table[] = {
     'U', 'V', 'W', 'X', 'Y', 'Z'
 };
 
-char* ultoa(char* buf, unsigned long val, int radix)
+char* xultoa(char* buf, unsigned long val, unsigned radix)
 {
     int l = 0;
     int r = 0;
@@ -239,15 +239,14 @@ const unsigned char g_xstr_c2i_table[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-unsigned long atoul(const char* str, char** ep, int base)
+unsigned long xatoul(const char* str, char** ep, unsigned base)
 {
     unsigned long acc = 0;
-    unsigned char v;
+    unsigned v;
 
     while (*str)
     {
-        v = g_xstr_c2i_table
-                [(unsigned char)*str++];
+        v = g_xstr_c2i_table[(unsigned char)*str++];
 
         if (v > base) break;
 
@@ -258,4 +257,4 @@ unsigned long atoul(const char* str, char** ep, int base)
 
     return acc;
 }
-#endif // XSTR_NO_EXTRA
+#endif // XSTR_ENABLE_EXTRA

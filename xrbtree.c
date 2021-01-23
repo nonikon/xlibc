@@ -22,13 +22,13 @@
 
 static inline void rb_set_parent(xrbt_node_t *rb, xrbt_node_t *p)
 {
-    rb->rb_parent_color = rb_color(rb) | (unsigned long)p;
+    rb->rb_parent_color = rb_color(rb) | (size_t)p;
 }
 
 static inline void rb_set_parent_color(xrbt_node_t *rb,
                         xrbt_node_t *p, int color)
 {
-    rb->rb_parent_color = (unsigned long)p | color;
+    rb->rb_parent_color = (size_t)p | color;
 }
 
 static inline void rb_set_black(xrbt_node_t *rb)
@@ -74,7 +74,7 @@ static inline void __rb_rotate_set_parents(xrbt_node_t *old, xrbt_node_t *new,
 static inline void __rb_insert_node(xrbt_node_t *node, xrbt_node_t *parent,
                 xrbt_node_t **rb_link)
 {
-    node->rb_parent_color = (unsigned long)parent;
+    node->rb_parent_color = (size_t)parent;
     node->rb_left = node->rb_right = NULL;
 
     *rb_link = node;
@@ -217,7 +217,7 @@ static inline xrbt_node_t *__rb_erase_node(xrbt_node_t *node, xrbt_node_t **root
     xrbt_node_t *child = node->rb_right;
     xrbt_node_t *tmp = node->rb_left;
     xrbt_node_t *parent, *rebalance;
-    unsigned long pc;
+    size_t pc;
 
     if (!tmp) {
         /*
@@ -298,7 +298,7 @@ static inline xrbt_node_t *__rb_erase_node(xrbt_node_t *node, xrbt_node_t **root
             rb_set_parent_color(child2, parent, RB_BLACK);
             rebalance = NULL;
         } else {
-            unsigned long pc2 = successor->rb_parent_color;
+            size_t pc2 = successor->rb_parent_color;
             successor->rb_parent_color = pc;
             rebalance = __rb_is_black(pc2) ? parent : NULL;
         }

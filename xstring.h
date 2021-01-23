@@ -6,14 +6,18 @@
 /* similar to C++ std::string libray. */
 
 #ifdef HAVE_XCONFIG_H
-# include "xconfig.h"
+#include "xconfig.h"
 #else
-/* uncomment this line to disable some interface such as 'uitoa'. */
-// # define XSTR_NO_EXTRA
 
-# ifndef XSTR_DEFAULT_CAPACITY
-#  define XSTR_DEFAULT_CAPACITY 32
-# endif
+/* enable xultoa/xatoul/... interface or not. */
+#ifndef XSTR_ENABLE_EXTRA
+#define XSTR_ENABLE_EXTRA       1
+#endif
+
+#ifndef XSTR_DEFAULT_CAPACITY
+#define XSTR_DEFAULT_CAPACITY   32
+#endif
+
 #endif
 
 typedef struct xstr xstr_t;
@@ -98,7 +102,7 @@ void xstr_pop_back(xstr_t* xs);
 #define xstr_insert_str(dest, pos, src) \
             xstr_insert(dest, pos, xstr_data(src), xstr_size(src))
 
-#ifndef XSTR_NO_EXTRA
+#if XSTR_ENABLE_EXTRA
 extern const char g_xstr_i2c_table[];
 extern const unsigned char g_xstr_c2i_table[];
 
@@ -108,9 +112,9 @@ extern const unsigned char g_xstr_c2i_table[];
  * ex:
  *     val = 65535, radix = 10 -> buf = "65535".
  *     val = 65535, radix = 16 -> buf = "FFFF". */
-char* ultoa(char* buf, unsigned long val, int radix);
+char* xultoa(char* buf, unsigned long val, unsigned radix);
 /* unsigned char -> hex string, return a pointer pointed to 'buf'. */
-static inline void uctoa_hex(char buf[2], unsigned char val)
+static inline void xuctoa_hex(char buf[2], unsigned char val)
 {
     buf[0] = g_xstr_i2c_table[val >> 4];
     buf[1] = g_xstr_i2c_table[val & 15];
@@ -118,13 +122,13 @@ static inline void uctoa_hex(char buf[2], unsigned char val)
 
 /* string -> unsigned long. similar to 'strtol'.
  * base: 2 ~ 36. */
-unsigned long atoul(const char* str, char** ep, int base);
+unsigned long xatoul(const char* str, char** ep, unsigned base);
 /* hex string -> unsigned char. */
-static inline unsigned char atouc_hex(const char str[2])
+static inline unsigned char xatouc_hex(const char str[2])
 {
     return g_xstr_c2i_table[(unsigned char)str[1]]
             | (g_xstr_c2i_table[(unsigned char)str[0]] << 4);
 }
-#endif // XSTR_NO_EXTRA
+#endif // XSTR_ENABLE_EXTRA
 
 #endif // _XSTRING_H_

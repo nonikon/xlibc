@@ -12,13 +12,15 @@ typedef struct
 
 void traverse(xarray_t* array)
 {
-    for (xarray_iter_t iter = xarray_begin(array);
+    xarray_iter_t iter;
+    for (iter = xarray_begin(array);
             iter != xarray_end(array); iter = xarray_iter_next(iter))
     {
         mystruct_t* p = xarray_iter_value(iter);
         printf("array[%d] = %d_%d\n", xarray_iter_index(iter), p->a, p->b);
     }
-    printf("blocks = %ld, values = %ld\n", array->blocks, array->values);
+    printf("blocks = %u, values = %u\n",
+        (unsigned)array->blocks, (unsigned)array->values);
 }
 void on_destroy(void* p)
 {
@@ -29,6 +31,7 @@ void test()
 {
     xarray_t* array = xarray_new(sizeof(mystruct_t), on_destroy);
     mystruct_t myst;
+    mystruct_t* pmyst;
 
     myst.a = 100; myst.b = 24;
     xarray_set(array, 10024, &myst);
@@ -54,7 +57,7 @@ void test()
     xarray_unset(array, 14);
     traverse(array);
 
-    mystruct_t* pmyst = xarray_get_value(array, 10027);
+    pmyst = xarray_get_value(array, 10027);
     if (pmyst != XARRAY_INVALID_VALUE)
         printf("\nfound array[10027] = %d_%d\n", pmyst->a, pmyst->b);
 
@@ -98,10 +101,10 @@ void test1(int nvalues)
     end = clock();
     printf("insert %d random integer done, time: %lf\n",
             nvalues, ((double) (end - begin)) / CLOCKS_PER_SEC);
-    printf("\tblocks %ld, values %ld\n", arr->blocks, arr->values);
-    printf("\tblock memory %ldMB, node memory %ldMB\n",
-            sizeof(xarray_block_t) * arr->blocks / 1024 / 1024,
-            (sizeof(xarray_node_t) + arr->val_size) * arr->values / 1024 / 1024);
+    printf("\tblocks %u, values %u\n", (unsigned)arr->blocks, (unsigned)arr->values);
+    printf("\tblock memory %uMB, node memory %uMB\n",
+            (unsigned)(sizeof(xarray_block_t) * arr->blocks / 1024 / 1024),
+            (unsigned)((sizeof(xarray_node_t) + arr->val_size) * arr->values / 1024 / 1024));
 
     // reset the same seed to get the same series number
     srand(RAND_SEED);
@@ -135,7 +138,7 @@ void test1(int nvalues)
     end = clock();
     printf("search and remove %d random integer done, time %lfs, %d not found!\n",
             nvalues, (double)(end - begin) / CLOCKS_PER_SEC, count);
-    printf("\tblocks %ld, values %ld\n", arr->blocks, arr->values);
+    printf("\tblocks %u, values %u\n", (unsigned)arr->blocks, (unsigned)arr->values);
 
     getchar();
     xarray_free(arr);

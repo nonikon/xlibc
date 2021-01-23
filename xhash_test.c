@@ -52,11 +52,13 @@ void test()
                         mystruct_hash, mystruct_equal, NULL);
     mystruct_t  myst;
     mystruct_t* pmyst;
+    xhash_iter_t iter;
+    int i;
 
 #define BEGIN_VALUE   311111800
 #define END_VALUE     311112000
     // put some elements
-    for (int i = BEGIN_VALUE; i < END_VALUE; ++i)
+    for (i = BEGIN_VALUE; i < END_VALUE; ++i)
     {
         sprintf(myst.key, "%d", i);
         myst.value = i;
@@ -66,7 +68,7 @@ void test()
     xhash_dump(xh);
 
     // remove some elements
-    for (int i = BEGIN_VALUE + 111; i < BEGIN_VALUE + 120; ++i)
+    for (i = BEGIN_VALUE + 111; i < BEGIN_VALUE + 120; ++i)
     {
         sprintf(myst.key, "%d", i);
         xhash_remove(xh, xhash_get(xh, &myst));
@@ -75,7 +77,7 @@ void test()
     // xhash_dump(xh);
 
     // find all elements
-    for (int i = BEGIN_VALUE; i < END_VALUE; ++i)
+    for (i = BEGIN_VALUE; i < END_VALUE; ++i)
     {
         sprintf(myst.key, "%d", i);
 
@@ -94,7 +96,7 @@ void test()
         printf("found!!!!!!!!!! %d\n", pmyst->value);
 
     // traverse
-    for (xhash_iter_t iter = xhash_begin(xh);
+    for (iter = xhash_begin(xh);
             iter != xhash_end(xh); iter = xhash_iter_next(xh, iter))
     {
         printf("%d ", ((mystruct_t*)xhash_iter_data(iter))->value);
@@ -133,8 +135,8 @@ void test_speed(int nvalues)
         }
     }
     end = clock();
-    printf("insert %d random integer done, buckets %ld, values %ld, time %lfs.\n",
-            nvalues, xh->bkt_size, xhash_size(xh), (double)(end - begin) / CLOCKS_PER_SEC);
+    printf("insert %d random integer done, buckets %u, values %u, time %lfs.\n",
+            nvalues, (unsigned)xh->bkt_size, (unsigned)xhash_size(xh), (double)(end - begin) / CLOCKS_PER_SEC);
 
     xhash_dump(xh);
 

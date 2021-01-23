@@ -91,12 +91,15 @@ void test_sort(int n)
 {
     xlist_t xl;
     clock_t start, end;
+    int v_prev = 0;
+    int i;
+    xlist_iter_t iter;
 
     xlist_init(&xl, sizeof(int), NULL);
 
     srand(RAND_SEED);
     start = clock();
-    for (int i = 0; i < n; ++i)
+    for (i = 0; i < n; ++i)
     {
         int v = rand() & 0x7fffffff;
         xlist_push_back(&xl, &v);
@@ -112,11 +115,10 @@ void test_sort(int n)
         (double)(end - start) / CLOCKS_PER_SEC);
 
     /* check sort result */
-    int v_prev = 0;
-    for (xlist_iter_t i = xlist_begin(&xl);
-        i != xlist_end(&xl); i = xlist_iter_next(i))
+    for (iter = xlist_begin(&xl);
+        iter != xlist_end(&xl); iter = xlist_iter_next(iter))
     {
-        int* v = xlist_iter_value(i);
+        int* v = xlist_iter_value(iter);
         if (*v < v_prev)
         {
             printf("wrong sequence!\n");

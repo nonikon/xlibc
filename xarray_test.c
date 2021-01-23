@@ -69,14 +69,9 @@ void test()
 }
 
 // random an integer
-static inline void rand_int(int* n)
+static inline int rand_int()
 {
-    unsigned char* c = (unsigned char*)n;
-
-    c[0] = rand() & 0xff;
-    c[1] = rand() & 0xff;
-    c[2] = rand() & 0xff;
-    c[3] = rand() & 0xff;
+    return rand() << 16 | rand() & 0xffff;
 }
 #define RAND_SEED 123456
 void test1(int nvalues)
@@ -91,7 +86,7 @@ void test1(int nvalues)
     for (i = 0; i < nvalues; ++i)
     {
         // value = rand();
-        rand_int(&value);
+        value = rand_int();
         if (!xarray_set(arr, value, NULL))
         {
             printf("out of memory, i = %d\n", i);
@@ -113,7 +108,7 @@ void test1(int nvalues)
     for (count = 0, i = 0; i < nvalues; ++i)
     {
         // value = rand();
-        rand_int(&value);
+        value = rand_int();
         if (xarray_get(arr, value))
             ++count;
     }
@@ -128,7 +123,7 @@ void test1(int nvalues)
     for (count = 0, i = 0; i < nvalues; ++i)
     {
         // value = rand();
-        rand_int(&value);
+        value = rand_int();
         xarray_iter_t iter = xarray_get(arr, value);
         if (iter)
             xarray_unset(arr, value);

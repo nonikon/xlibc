@@ -115,6 +115,11 @@ void tree_overview(xrbt_t* rb)
         printf("%d ", acc[depth]);
     printf(".\n");
 }
+// random an integer
+static inline int rand_int()
+{
+    return rand() << 16 | rand() & 0xffff;
+}
 void test_speed(int nvalues)
 {
     xrbt_t* rb = xrbt_new(sizeof(int), on_cmp2, NULL);
@@ -126,7 +131,7 @@ void test_speed(int nvalues)
     begin = clock();
     for (i = 0; i < nvalues; ++i)
     {
-        value = rand() & 0x7fffffff;
+        value = rand_int();
         if (!xrbt_insert(rb, &value))
         {
             printf("out of memory when insert %d value.\n", i);
@@ -145,7 +150,7 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        value = rand() & 0x7fffffff;
+        value = rand_int();
         if (xrbt_find(rb, &value))
             ++count;
     }
@@ -159,7 +164,7 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        value = rand() & 0x7fffffff;
+        value = rand_int();
         xrbt_iter_t iter = xrbt_find(rb, &value);
         if (iter)
             xrbt_erase(rb, iter);

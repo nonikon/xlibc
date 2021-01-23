@@ -79,6 +79,11 @@ void test1()
     xlist_destroy(&xl);
 }
 
+// random an integer
+static inline int rand_int()
+{
+    return rand() << 16 | rand() & 0xffff;
+}
 int int_cmp(void* l, void* r)
 {
     if (*(int*)l > *(int*)r)
@@ -101,7 +106,7 @@ void test_sort(int n)
     start = clock();
     for (i = 0; i < n; ++i)
     {
-        int v = rand() & 0x7fffffff;
+        int v = rand_int();
         xlist_push_back(&xl, &v);
     }
     end = clock();
@@ -141,6 +146,6 @@ int main(int argc, char** argv)
 {
     test();
     // test1();
-    // test_sort(5000000);
+    test_sort(5000000);
     return 0;
 }

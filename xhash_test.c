@@ -107,7 +107,11 @@ void test()
 }
 
 /* ------------------------------------- */
-
+// random an integer
+static inline int rand_int()
+{
+    return rand() << 16 | rand() & 0xffff;
+}
 unsigned int_hash(void* v)
 {
     return *(unsigned*)v;
@@ -127,7 +131,7 @@ void test_speed(int nvalues)
     begin = clock();
     for (i = 0; i < nvalues; ++i)
     {
-        value = rand() & 0x7fffffff;
+        value = rand_int();
         if (!xhash_put(xh, &value))
         {
             printf("out of memory when insert %d value.\n", i);
@@ -146,7 +150,7 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        value = rand() & 0x7fffffff;
+        value = rand_int();
         if (xhash_get(xh, &value))
             ++count;
     }
@@ -160,7 +164,7 @@ void test_speed(int nvalues)
     begin = clock();
     for (count = 0, i = 0; i < nvalues; ++i)
     {
-        value = rand() & 0x7fffffff;
+        value = rand_int();
         xhash_iter_t iter = xhash_get(xh, &value);
         if (iter)
             xhash_remove(xh, iter);

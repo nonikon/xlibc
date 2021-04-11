@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-/* similar to C++ std::string libray. */
+/* similar to C++ std::string library. */
 
 #ifdef HAVE_XCONFIG_H
 #include "xconfig.h"

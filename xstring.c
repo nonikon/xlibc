@@ -31,7 +31,6 @@ xstr_t* xstr_init(xstr_t* xs, int capacity)
 {
     xs->capacity = capacity > 0
             ? capacity : XSTR_DEFAULT_CAPACITY;
-    /* no check 'xs->data' null or not */
     xs->data = malloc(xs->capacity);
 
     if (xs->data)
@@ -49,7 +48,6 @@ xstr_t* xstr_init_with(xstr_t* xs, const char* cstr, int size)
     if (size < 0) size = strlen(cstr);
 
     xs->capacity = size + 1;
-    /* no check 'xs->data' null or not */
     xs->data = malloc(xs->capacity);
 
     if (xs->data)
@@ -246,11 +244,12 @@ unsigned long xatoul(const char* str, char** ep, unsigned base)
 
     while (*str)
     {
-        v = g_xstr_c2i_table[(unsigned char)*str++];
+        v = g_xstr_c2i_table[(unsigned char)*str];
 
-        if (v > base) break;
+        if (v >= base) break;
 
         acc = acc * base + v;
+        str = str + 1;
     }
 
     if (ep) *ep = (char*)str;

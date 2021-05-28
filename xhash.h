@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2019-2021 nonikon@qq.com.
+ * All rights reserved.
+ */
+
 #ifndef _XHASH_H_
 #define _XHASH_H_
 

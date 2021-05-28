@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2019-2021 nonikon@qq.com.
+ * All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

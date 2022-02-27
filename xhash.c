@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 nonikon@qq.com.
+ * Copyright (C) 2019-2022 nonikon@qq.com.
  * All rights reserved.
  */
 
@@ -234,6 +234,8 @@ void xhash_clear(xhash_t* xh)
     size_t i;
     xhash_node_t* curr = NULL;
     xhash_node_t* next;
+
+    if (xhash_empty(xh)) return;
 
     for (i = 0; i < xh->bkt_size; ++i)
     {

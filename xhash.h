@@ -63,7 +63,7 @@ struct xhash
 };
 
 /* initialize a 'xhash_t'.
- * 'size' is the init bucket size, MUST be 2^n or -1 (means default).
+ * 'size' is the init bucket size, can be negative (means default).
  * 'hash_cb' is used to get hash code of an element, can't be 'NULL'.
  * 'equal_cb' is used to check the equals of two elements, can't be 'NULL'.
  * 'destroy_cb' is called when destroying an element, can be 'NULL'. */
@@ -132,7 +132,7 @@ void xhash_clear(xhash_t* xh);
 #define xhash_remove_data(xh, pdata) \
                 xhash_remove(xh, xhash_data_iter(pdata))
 
-#define XHASH_INVALID_DATA  xhash_iter_data((xhash_iter_t)0)
+#define XHASH_INVALID_DATA  ((void*)sizeof(xhash_node_t))
 
 /* Some helper hash function, can be used in 'xhash_hash_cb'. */
 

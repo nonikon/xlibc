@@ -63,6 +63,18 @@ static int buckets_expand(xhash_t* xh)
     return 0;
 }
 
+static inline unsigned int align32pow2(unsigned int z)
+{
+    z -= 1;
+    z |= z >> 1;
+    z |= z >> 2;
+    z |= z >> 4;
+    z |= z >> 8;
+    z |= z >> 16;
+
+    return z + 1;
+}
+
 xhash_t* xhash_init(xhash_t* xh, int size, size_t data_size,
             xhash_hash_cb hash_cb, xhash_equal_cb equal_cb,
             xhash_destroy_cb destroy_cb)
@@ -70,14 +82,13 @@ xhash_t* xhash_init(xhash_t* xh, int size, size_t data_size,
     xh->hash_cb     = hash_cb;
     xh->equal_cb    = equal_cb;
     xh->destroy_cb  = destroy_cb;
-    xh->bkt_size    = size > 0 ? size : XHASH_DEFAULT_SIZE;
+    xh->bkt_size    = size < XHASH_DEFAULT_SIZE ? XHASH_DEFAULT_SIZE : align32pow2(size);
     xh->data_size   = data_size;
     xh->size        = 0;
     xh->loadfactor  = XHASH_DEFAULT_LOADFACTOR;
 #if XHASH_ENABLE_CACHE
     xh->cache       = NULL;
 #endif
-    /* no check 'xh->buckets' null or not */
     xh->buckets     = malloc(sizeof(xhash_node_t*) * xh->bkt_size);
 
     if (xh->buckets)
